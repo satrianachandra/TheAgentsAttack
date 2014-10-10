@@ -16,12 +16,14 @@ import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.gui.GuiAgent;
 import jade.gui.GuiEvent;
+import jade.wrapper.AgentContainer;
 import jade.wrapper.AgentController;
 import jade.wrapper.StaleProxyException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import utils.Terminal;
 
 
 /**
@@ -30,11 +32,12 @@ import java.util.logging.Logger;
  */
 public class AgentCoordinator extends GuiAgent {
 
-    
     public static final int MESSAGE_RECEIVED = 1;
     public static final int MESSAGE_SENT = 2;
     //an example of adding 1 remote platforms
     public AID remoteDF;
+    private List<jade.wrapper.AgentContainer> mainContainersList;
+    private List<Process>listOfProcesses;
     
     private AgentCoordinatorUI agentUI;
     private List<AgentController> agentsList;
@@ -104,51 +107,66 @@ public class AgentCoordinator extends GuiAgent {
     public void startAgentSmiths(int numberOfAgents, long interval, String serverAddress, int serverPort ){
         // Get a hold on JADE runtime
         Runtime rt = Runtime.instance();
-
         // Exit the JVM when there are no more containers around
         rt.setCloseVM(true);
         System.out.print("runtime created\n");
-
-        // Create a default profile
-        /*
-        Profile profile = new ProfileImpl(null, 1200, null);
-        System.out.print("profile created\n");
-
-        System.out.println("Launching a whole in-process platform..."+profile);
-        jade.wrapper.AgentContainer mainContainer = rt.createMainContainer(profile);
-        */
         
-        // now set the default Profile to start a container
-        ProfileImpl pContainer = new ProfileImpl(null, 1099, null);  
-        jade.wrapper.AgentContainer cont = rt.createAgentContainer(pContainer);
-        System.out.println("Launching the agent container after ..."+pContainer);
-
-        System.out.println("containers created");
-        System.out.println("Launching Agent Smith on the main container ...");
-        
-        agentsList = new ArrayList<AgentController>();
+        int numberOfAgentPerPlatform = 2;
+        int numberOfPlatforms = numberOfAgents/numberOfAgentPerPlatform;
+        int remainderAgents = numberOfAgents%numberOfAgentPerPlatform;
+        int startingPort=1100;
+        mainContainersList = new ArrayList<>();
+        agentsList = new ArrayList<>();
+        listOfProcesses = new ArrayList<>();
         AgentController agentSmith;
-        for (int i=0;i<numberOfAgents;i++){
-            try {
-                Object[] smithArgs = new Object[4];
-                smithArgs[0] = interval;
-                smithArgs[1] = serverAddress;
-                smithArgs[2] = serverPort;
-                smithArgs[3] = getAID(); //the coordinator's aid
-                agentSmith = cont.createNewAgent("Smith-"+i,
-                        "agentsmith.AgentSmith", smithArgs);
-                agentSmith.start();
-                agentsList.add(agentSmith);
-            } catch (StaleProxyException ex) {
-                Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
-            }   
-        }
+        createPlatformContainerAgents(numberOfPlatforms,startingPort,rt,
+            numberOfAgentPerPlatform,interval,serverAddress,serverPort);
         
+        //start the remaining agents on another container
+        if (remainderAgents!=0){
+            createPlatformContainerAgents(1,startingPort+numberOfPlatforms,rt,
+                remainderAgents,interval,serverAddress,serverPort);
+        }
     }
     
     public void killAllAgentSmith() throws StaleProxyException{
-        for (int i=0;i<agentsList.size();i++){
-            agentsList.get(i).kill();
+        for (int i=0;i<listOfProcesses.size();i++){
+            listOfProcesses.get(i).destroy();
+        }
+        
+    }
+    private void createPlatformContainerAgents(int numberOfPlatforms,int startingPort,Runtime rt,
+            int numberOfAgentPerContainers,long interval, String serverAddress, int serverPort){
+        AgentController agentSmith;
+        for (int i=0;i<numberOfPlatforms;i++){
+            //Start a platform
+            Process p = Terminal.execute("java jade.Boot -gui -port "+(startingPort+i)+" -platform-id "+"Platform-"+i);
+            listOfProcesses.add(p);
+            /*
+            //Profile mProfile = new ProfileImpl("192.168.0.102", startingPort+i,"Platform-"+i+":"+(startingPort+i),false);
+            Profile mProfile = new ProfileImpl("192.168.0.102", startingPort+i,null);
+            jade.wrapper.AgentContainer mainContainer = rt.createMainContainer(mProfile);
+            System.out.println("main container created "+mainContainer);
+            mainContainersList.add(mainContainer);
+            */
+            ProfileImpl pContainer = new ProfileImpl(null, startingPort+i,null);
+            jade.wrapper.AgentContainer agentContainer = rt.createAgentContainer(pContainer);
+            //System.out.println("containers created "+pContainer);
+            for (int j=0;j<numberOfAgentPerContainers;j++){
+                try {
+                    Object[] smithArgs = new Object[4];
+                    smithArgs[0] = interval;
+                    smithArgs[1] = serverAddress;
+                    smithArgs[2] = serverPort;
+                    smithArgs[3] = getAID(); //the coordinator's aid
+                    agentSmith = agentContainer.createNewAgent("Platform-"+i+"_Smith-"+j,
+                            "agentsmith.AgentSmith", smithArgs);
+                    agentSmith.start();
+                    agentsList.add(agentSmith);
+                } catch (StaleProxyException ex) {
+                    Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
+                }   
+            }
         }
     }
     

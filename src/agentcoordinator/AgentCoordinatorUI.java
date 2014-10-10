@@ -23,6 +23,7 @@ public class AgentCoordinatorUI extends javax.swing.JFrame {
     public AgentCoordinatorUI() {
         initComponents();
         setVisible(true);
+        buttonKillAllAgents.setEnabled(false);
     }
 
     /**
@@ -197,6 +198,8 @@ public class AgentCoordinatorUI extends javax.swing.JFrame {
                 myAgent.startAgentSmiths(numberOfAgent,interval,serverAddress,serverPort);
             }
         }).start();
+        buttonLaunchAgents.setEnabled(false);
+        buttonKillAllAgents.setEnabled(true);
     }//GEN-LAST:event_buttonLaunchAgentsActionPerformed
 
     private void textFieldIntervalOfTickerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textFieldIntervalOfTickerActionPerformed
@@ -209,6 +212,8 @@ public class AgentCoordinatorUI extends javax.swing.JFrame {
             public void run() {
                 try {
                    myAgent.killAllAgentSmith();
+                   buttonLaunchAgents.setEnabled(true);
+                   buttonKillAllAgents.setEnabled(false);
                 } catch (StaleProxyException ex) {
                     Logger.getLogger(AgentCoordinatorUI.class.getName()).log(Level.SEVERE, null, ex);
                 }

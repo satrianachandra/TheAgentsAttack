@@ -31,6 +31,10 @@ public class AgentSmith extends Agent {
     private AgentSmith theAgent;
     private AID coordinatorAID;
     
+    private Socket tcpClientSocket;
+    private PrintWriter out ;
+    private BufferedReader in ;
+            
     @Override
     protected void setup() {
         theAgent = this;
@@ -60,29 +64,23 @@ public class AgentSmith extends Agent {
             
             protected void onTick() {
                 try{
-                Socket tcpClientSocket = new Socket(serverAddress, serverPort);
-                PrintWriter out =
-                new PrintWriter(tcpClientSocket.getOutputStream(), true);
-                BufferedReader in =
-                new BufferedReader(
+                if ((tcpClientSocket == null)||tcpClientSocket.isClosed()){
+                    tcpClientSocket = new Socket(serverAddress, serverPort);
+                    out = new PrintWriter(tcpClientSocket.getOutputStream(), true);
+                    in = new BufferedReader(
                     new InputStreamReader(tcpClientSocket.getInputStream()));
+                }
+                //out = new PrintWriter(tcpClientSocket.getOutputStream(), true);
+                //in = new BufferedReader(new InputStreamReader(tcpClientSocket.getInputStream()));
                 out.println("100");
-                boolean stop=false;
+                
                 String result="";
                 result = in.readLine();
                 System.out.println("result "+result);
-                /*
-                while (!stop){
-                    result = in.readLine();
-                    if (result!=null){
-                        stop = true;
-                    }
-                }*/
                 //inform the Coordinator
                 informCoordinator("fibo result: "+result);
-                in.close();
-                out.close();
-                tcpClientSocket.close();
+                //in.close();
+                //out.close();
                 }catch(UnknownHostException e){
                     System.err.println("Don't know about host " + serverAddress);
                     //System.exit(1);
@@ -100,6 +98,20 @@ public class AgentSmith extends Agent {
         } );
         
         addBehaviour(new ReceiveMessage(this));
+    }
+    
+    @Override
+    protected void takeDown(){
+        try {
+            if (in !=null){
+                in.close();
+                out.close();
+                tcpClientSocket.close();    
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(AgentSmith.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
     }
     
     

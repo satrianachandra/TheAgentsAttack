@@ -19,7 +19,8 @@ public class Terminal {
     public static Process execute(String commands){
         StringBuffer output = new StringBuffer();
         
-        String[] cmd = { "cmd.exe", "/c",commands};
+        //String[] cmd = { "cmd.exe", "/c",commands};
+        String[] cmd = { "/bin/sh", "-c",commands};
         //String[] cmd = {commands};
         final Process p ;
         try {

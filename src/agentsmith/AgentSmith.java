@@ -61,17 +61,28 @@ public class AgentSmith extends Agent {
             protected void onTick() {
                 try{
                 Socket tcpClientSocket = new Socket(serverAddress, serverPort);
-                
-                //inform the Coordinator
-                informCoordinator("succesfull opened TCP socket to server");
-                
                 PrintWriter out =
                 new PrintWriter(tcpClientSocket.getOutputStream(), true);
-                
                 BufferedReader in =
                 new BufferedReader(
                     new InputStreamReader(tcpClientSocket.getInputStream()));
-                
+                out.println("100");
+                boolean stop=false;
+                String result="";
+                result = in.readLine();
+                System.out.println("result "+result);
+                /*
+                while (!stop){
+                    result = in.readLine();
+                    if (result!=null){
+                        stop = true;
+                    }
+                }*/
+                //inform the Coordinator
+                informCoordinator("fibo result: "+result);
+                in.close();
+                out.close();
+                tcpClientSocket.close();
                 }catch(UnknownHostException e){
                     System.err.println("Don't know about host " + serverAddress);
                     //System.exit(1);
@@ -81,6 +92,8 @@ public class AgentSmith extends Agent {
                     informCoordinator("Failed opening TCP socket to server");
                 
                     //System.exit(1);
+                }catch(Exception ex){
+                    Logger.getLogger(AgentSmith.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 
             }

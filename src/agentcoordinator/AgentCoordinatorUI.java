@@ -103,7 +103,7 @@ public class AgentCoordinatorUI extends javax.swing.JFrame {
 
         jLabel7.setText("Server Port");
 
-        textFieldServerAddress.setText("www.google.com");
+        textFieldServerAddress.setText("54.77.138.59");
 
         textFieldServerPort.setText("80");
 
@@ -186,13 +186,17 @@ public class AgentCoordinatorUI extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void buttonLaunchAgentsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonLaunchAgentsActionPerformed
-        //Start the agents
-        int numberOfAgent = Integer.decode(textFieldNumberOfAgents.getText());
-        long interval = Long.decode(textFieldIntervalOfTicker.getText());
-        String serverAddress = textFieldServerAddress.getText();
-        int serverPort = Integer.decode(textFieldServerPort.getText());
-        myAgent.startAgentSmiths(numberOfAgent,interval,serverAddress,serverPort);
-        
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                //Start the agents
+                int numberOfAgent = Integer.decode(textFieldNumberOfAgents.getText());
+                long interval = Long.decode(textFieldIntervalOfTicker.getText());
+                String serverAddress = textFieldServerAddress.getText();
+                int serverPort = Integer.decode(textFieldServerPort.getText());
+                myAgent.startAgentSmiths(numberOfAgent,interval,serverAddress,serverPort);
+            }
+        }).start();
     }//GEN-LAST:event_buttonLaunchAgentsActionPerformed
 
     private void textFieldIntervalOfTickerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textFieldIntervalOfTickerActionPerformed
@@ -200,11 +204,16 @@ public class AgentCoordinatorUI extends javax.swing.JFrame {
     }//GEN-LAST:event_textFieldIntervalOfTickerActionPerformed
 
     private void buttonKillAllAgentsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonKillAllAgentsActionPerformed
-        try {
-            myAgent.killAllAgentSmith();
-        } catch (StaleProxyException ex) {
-            Logger.getLogger(AgentCoordinatorUI.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                   myAgent.killAllAgentSmith();
+                } catch (StaleProxyException ex) {
+                    Logger.getLogger(AgentCoordinatorUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }).start();
     }//GEN-LAST:event_buttonKillAllAgentsActionPerformed
 
     /**

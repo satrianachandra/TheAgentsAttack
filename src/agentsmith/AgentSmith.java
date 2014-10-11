@@ -41,10 +41,18 @@ public class AgentSmith extends Agent {
         
         Object[] args = getArguments();
         if (args != null){
+            /*
             interval = (long) args[0];
             serverAddress = (String)args[1];
             serverPort = (int)args[2];
             coordinatorAID = (AID)args[3];
+             */
+            interval = Long.decode(args[0].toString());
+            serverAddress = args[1].toString();
+            serverPort = Integer.decode(args[2].toString());
+            coordinatorAID = new AID(args[3].toString(), AID.ISGUID);
+            coordinatorAID.addAddresses(args[4].toString());
+            
         }
         
         addBehaviour(new TickerBehaviour(this, interval) {

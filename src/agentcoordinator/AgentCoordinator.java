@@ -19,6 +19,9 @@ import jade.gui.GuiEvent;
 import jade.wrapper.AgentContainer;
 import jade.wrapper.AgentController;
 import jade.wrapper.StaleProxyException;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -32,6 +35,7 @@ import utils.Terminal;
  */
 public class AgentCoordinator extends GuiAgent {
 
+    private static final String COMMA=",";
     public static final int MESSAGE_RECEIVED = 1;
     public static final int MESSAGE_SENT = 2;
     //an example of adding 1 remote platforms
@@ -106,12 +110,12 @@ public class AgentCoordinator extends GuiAgent {
     
     public void startAgentSmiths(int numberOfAgents, long interval, String serverAddress, int serverPort ){
         // Get a hold on JADE runtime
-        Runtime rt = Runtime.instance();
+        //Runtime rt = Runtime.instance();
         // Exit the JVM when there are no more containers around
-        rt.setCloseVM(true);
-        System.out.print("runtime created\n");
+        //rt.setCloseVM(true);
+        //System.out.print("runtime created\n");
         
-        int numberOfAgentPerPlatform = 2;
+        int numberOfAgentPerPlatform = 1000;
         int numberOfPlatforms = numberOfAgents/numberOfAgentPerPlatform;
         int remainderAgents = numberOfAgents%numberOfAgentPerPlatform;
         int startingPort=1100;
@@ -119,12 +123,12 @@ public class AgentCoordinator extends GuiAgent {
         agentsList = new ArrayList<>();
         listOfProcesses = new ArrayList<>();
         AgentController agentSmith;
-        createPlatformContainerAgents(numberOfPlatforms,startingPort,rt,
+        createPlatformContainerAgents(numberOfPlatforms,startingPort,
             numberOfAgentPerPlatform,interval,serverAddress,serverPort);
         
         //start the remaining agents on another container
         if (remainderAgents!=0){
-            createPlatformContainerAgents(1,startingPort+numberOfPlatforms,rt,
+            createPlatformContainerAgents(1,startingPort+numberOfPlatforms,
                 remainderAgents,interval,serverAddress,serverPort);
         }
     }
@@ -135,13 +139,16 @@ public class AgentCoordinator extends GuiAgent {
         }
         
     }
-    private void createPlatformContainerAgents(int numberOfPlatforms,int startingPort,Runtime rt,
+    private void createPlatformContainerAgents(int numberOfPlatforms,int startingPort,
             int numberOfAgentPerContainers,long interval, String serverAddress, int serverPort){
         AgentController agentSmith;
         for (int i=0;i<numberOfPlatforms;i++){
             //Start a platform
-            Process p = Terminal.execute("java jade.Boot -gui -port "+(startingPort+i)+" -platform-id "+"Platform-"+i);
-            listOfProcesses.add(p);
+            String createPlatformString = "java jade.Boot -gui -port "+(startingPort+i)+" -platform-id "+"Platform-"+i;
+            System.out.println(createPlatformString);
+            Process p = Terminal.executeNoError(createPlatformString);
+            
+            //listOfProcesses.add(p);
             /*
             //Profile mProfile = new ProfileImpl("192.168.0.102", startingPort+i,"Platform-"+i+":"+(startingPort+i),false);
             Profile mProfile = new ProfileImpl("192.168.0.102", startingPort+i,null);
@@ -149,10 +156,15 @@ public class AgentCoordinator extends GuiAgent {
             System.out.println("main container created "+mainContainer);
             mainContainersList.add(mainContainer);
             */
-            ProfileImpl pContainer = new ProfileImpl(null, startingPort+i,null);
-            jade.wrapper.AgentContainer agentContainer = rt.createAgentContainer(pContainer);
+            
+            
+            
+            //ProfileImpl pContainer = new ProfileImpl(null, startingPort+i,null);
+            //jade.wrapper.AgentContainer agentContainer = rt.createAgentContainer(pContainer);
             //System.out.println("containers created "+pContainer);
+            StringBuffer agentsListString = new StringBuffer();
             for (int j=0;j<numberOfAgentPerContainers;j++){
+                /*
                 try {
                     Object[] smithArgs = new Object[4];
                     smithArgs[0] = interval;
@@ -165,8 +177,32 @@ public class AgentCoordinator extends GuiAgent {
                     agentsList.add(agentSmith);
                 } catch (StaleProxyException ex) {
                     Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
-                }   
+                } */
+                String coordinatorName = getAID().getName();
+                String coordinatorAddress = getAID().getAddressesArray()[0];
+                agentsListString.append("Platform-"+i+"_Smith-"+j+":agentsmith.AgentSmith("+interval
+                        +COMMA+serverAddress+COMMA+serverPort+COMMA+coordinatorName
+                        +COMMA+coordinatorAddress+");");
             }
+            //String createAgentsString = "cd C:\\Users\\Ethan_Hunt\\Documents\\NetBeansProjects\\TheAgentsAttack\\src\njava jade.Boot -port "+(startingPort+i)+" -container \""+agentsListString.toString()+"\"";
+            String createAgentsString = "cd /home/ubuntu/Codes/TheAgentsAttack/src && java jade.Boot -port "+(startingPort+i)+" -container \""+agentsListString.toString()+"\"";
+            System.out.println(createAgentsString);
+            Process p2 = Terminal.executeNoError(createAgentsString);
+            //System.out.println("java jade.Boot -port "+(startingPort+i)+" -container \""+agentsListString.toString()+"\"");
+            /*
+            final File file = new File("createAgents.bat");
+            try {
+                file.createNewFile();
+                PrintWriter writer = new PrintWriter(file, "UTF-8");
+                writer.println(createAgentsString);
+                writer.close();
+                Terminal.executeNoError("start createAgents.bat");
+            } catch (IOException ex) {
+                Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            */
+            
+            
         }
     }
     

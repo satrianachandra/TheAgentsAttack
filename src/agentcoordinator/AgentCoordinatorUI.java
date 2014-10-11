@@ -104,9 +104,9 @@ public class AgentCoordinatorUI extends javax.swing.JFrame {
 
         jLabel7.setText("Server Port");
 
-        textFieldServerAddress.setText("54.77.138.59");
+        textFieldServerAddress.setText("54.171.86.46");
 
-        textFieldServerPort.setText("80");
+        textFieldServerPort.setText("8080");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

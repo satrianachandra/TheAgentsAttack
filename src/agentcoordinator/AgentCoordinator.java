@@ -20,13 +20,17 @@ import jade.core.Runtime;
 import jade.wrapper.AgentController;
 import jade.wrapper.StaleProxyException;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import messageclasses.SmithParameter;
 import utils.Terminal;
+
+import com.jcraft.jsch.*;
 
 /**
  *
@@ -192,23 +196,30 @@ public class AgentCoordinator extends GuiAgent {
         }
         
         //Start the platform (and main container) in a remote machine
-        Process p= Terminal.execute("ssh -i /home/ubuntu/14_LP1_KEY_D7001D_CHASAT-4.pem 54.171.91.143");
-        PrintStream out = new PrintStream(p.getOutputStream());
-        BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
-        out.println("java jade.Boot -gui\njava jade.Boot -container SC:agentsubcoordinator.AgentSubCoordinator");
+        JSch jsch=new JSch();
+        Session session = null;
         try {
-            while (in.ready()) {
-                String s = in.readLine();
-                System.out.println(s);
-            }
-        } catch (IOException ex) {
+            jsch.addIdentity("/home/ubuntu/14_LP1_KEY_D7001D_CHASAT-4.pem");
+            jsch.setConfig("StrictHostKeyChecking", "no");
+
+            //enter your own EC2 instance IP here
+            session=jsch.getSession("ubuntu", "54.171.91.143", 22);
+            session.connect();
+        } catch (JSchException ex) {
             Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        //out.println("exit");
-
-        //Start the Agent Coordinator
-        
+        //run stuff
+        String command = "java jade.Boot -gui";//;java jade.Boot -container SC:agentsubcoordinator.AgentSubCoordinator";
+        Channel channel = null;
+        try {
+            channel = session.openChannel("exec");
+            ((ChannelExec)channel).setCommand(command);
+            ((ChannelExec)channel).setErrStream(System.err);
+            channel.connect();
+        } catch (JSchException ex) {
+            Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
     }   
     

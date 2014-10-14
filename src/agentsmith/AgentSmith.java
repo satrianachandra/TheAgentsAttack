@@ -7,6 +7,8 @@ package agentsmith;
 
 import jade.core.AID;
 import jade.core.Agent;
+import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.OneShotBehaviour;
 import jade.core.behaviours.TickerBehaviour;
 import jade.lang.acl.ACLMessage;
 import java.io.BufferedReader;
@@ -41,18 +43,17 @@ public class AgentSmith extends Agent {
         
         Object[] args = getArguments();
         if (args != null){
-            /*
             interval = (long) args[0];
             serverAddress = (String)args[1];
             serverPort = (int)args[2];
             coordinatorAID = (AID)args[3];
-             */
+            /*
             interval = Long.decode(args[0].toString());
             serverAddress = args[1].toString();
             serverPort = Integer.decode(args[2].toString());
             coordinatorAID = new AID(args[3].toString(), AID.ISGUID);
             coordinatorAID.addAddresses(args[4].toString());
-            
+            */
         }
         
         addBehaviour(new TickerBehaviour(this, interval) {
@@ -65,7 +66,7 @@ public class AgentSmith extends Agent {
                 msg.setLanguage("English");
                 msg.setContent(content);
                 
-                SendMessage smithSM = new SendMessage(msg, theAgent);
+                SendMessage smithSM = new SendMessage(msg);
                 theAgent.addBehaviour(smithSM);
                 
             }
@@ -105,7 +106,7 @@ public class AgentSmith extends Agent {
             }
         } );
         
-        addBehaviour(new ReceiveMessage(this));
+        addBehaviour(new ReceiveMessage());
     }
     
     @Override
@@ -122,5 +123,49 @@ public class AgentSmith extends Agent {
         
     }
     
+    public class SendMessage extends OneShotBehaviour {
+    
+    private ACLMessage msg;
+    
+    public SendMessage(ACLMessage msg){
+        super();
+        this.msg = msg;
+    }
+
+    @Override
+    public void action() {
+        myAgent.send(msg);
+        System.out.println("****I Sent Message to::>  *****"+"\n"+
+                            "The Content of My Message is::>"+ msg.getContent());
+
+    }
+    }
+
+    
+    public class ReceiveMessage extends CyclicBehaviour {
+   // Variable to Hold the content of the received Message
+    private String Message_Performative;
+    private String Message_Content;
+    private String SenderName;
+    private String MyPlan;
+    
+    public void action() {
+        ACLMessage msg = receive();
+        if(msg != null) {
+
+            Message_Performative = msg.getPerformative(msg.getPerformative());
+            Message_Content = msg.getContent();
+            SenderName = msg.getSender().getLocalName();
+            System.out.println(" ****I Received a Message***" +"\n"+
+                    "The Sender Name is::>"+ SenderName+"\n"+
+                    "The Content of the Message is::> " + Message_Content + "\n"+
+                    "::: And Performative is::> " + Message_Performative + "\n");
+            System.out.println("ooooooooooooooooooooooooooooooooooooooo");
+        
+        }
+
+    } 
+}
+
     
 }

@@ -6,28 +6,27 @@
 package agentcoordinator;
 
 import jade.core.AID;
-import jade.core.Profile;
 import jade.core.ProfileImpl;
-import jade.core.Runtime;
+import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.SearchConstraints;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.gui.GuiAgent;
 import jade.gui.GuiEvent;
-import jade.wrapper.AgentContainer;
+import jade.lang.acl.ACLMessage;
+import jade.core.Runtime;
 import jade.wrapper.AgentController;
 import jade.wrapper.StaleProxyException;
-import java.io.File;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import messageclasses.SmithParameter;
 import utils.Terminal;
-
 
 /**
  *
@@ -35,16 +34,12 @@ import utils.Terminal;
  */
 public class AgentCoordinator extends GuiAgent {
 
-    private static final String COMMA=",";
     public static final int MESSAGE_RECEIVED = 1;
     public static final int MESSAGE_SENT = 2;
+    public static final int MESSAGE_LAUNCH_AGENT = 3;
     //an example of adding 1 remote platforms
     public AID remoteDF;
-    private List<jade.wrapper.AgentContainer> mainContainersList;
-    private List<Process>listOfProcesses;
-    
     private AgentCoordinatorUI agentUI;
-    private List<AgentController> agentsList;
     
     protected void setup() {
             /** Registration with the DF */
@@ -53,7 +48,7 @@ public class AgentCoordinator extends GuiAgent {
             sd.setType("CoordinatorAgent");
             sd.setName(getName());
             sd.setOwnership("JADE");
-            sd.addOntologies("CoordinatorAgent");
+            sd.addOntologies("JADEAgent");
             dfd.setName(getAID());
 
             dfd.addServices(sd);
@@ -76,134 +71,145 @@ public class AgentCoordinator extends GuiAgent {
             //} catch (FIPAException ex) {
                 //Logger.getLogger(AgentCommGUI.class.getName()).log(Level.SEVERE, null, ex);
             //}
-            ReceiveMessage rm = new ReceiveMessage(this);
+            ReceiveMessage rm = new ReceiveMessage();
             addBehaviour(rm);
         }
     
-    public List<AID> findAgents(AID dfAID) throws FIPAException{
-        DFAgentDescription template = new DFAgentDescription();
-        ServiceDescription templateSd = new ServiceDescription();
-        templateSd.setType("AgentSmith");
-        template.addServices(templateSd);
-        SearchConstraints sc = new SearchConstraints();
-        // We want to receive 10 results at most
-        //sc.setMaxResults(new Long(20));
-        sc.setMaxDepth(1L);
-        DFAgentDescription[] results = DFService.search(this,dfAID, template, sc);
-        
-        List<AID> myAgentsList = new ArrayList<AID>();
-        if (results.length>0){
-            for(int i=0;i<results.length;i++){
-                DFAgentDescription agentDesc = results[i];
-                AID provider = agentDesc.getName();
-                myAgentsList.add(provider);
-           }   
-        }
-        return myAgentsList;
-    }
-
+    
     
     @Override
     protected void onGuiEvent(GuiEvent ge) {
-        //
-    }
-    
-    public void startAgentSmiths(int numberOfAgents, long interval, String serverAddress, int serverPort ){
-        // Get a hold on JADE runtime
-        //Runtime rt = Runtime.instance();
-        // Exit the JVM when there are no more containers around
-        //rt.setCloseVM(true);
-        //System.out.print("runtime created\n");
-        
-        int numberOfAgentPerPlatform = 1000;
-        int numberOfPlatforms = numberOfAgents/numberOfAgentPerPlatform;
-        int remainderAgents = numberOfAgents%numberOfAgentPerPlatform;
-        int startingPort=1100;
-        mainContainersList = new ArrayList<>();
-        agentsList = new ArrayList<>();
-        listOfProcesses = new ArrayList<>();
-        AgentController agentSmith;
-        createPlatformContainerAgents(numberOfPlatforms,startingPort,
-            numberOfAgentPerPlatform,interval,serverAddress,serverPort);
-        
-        //start the remaining agents on another container
-        if (remainderAgents!=0){
-            createPlatformContainerAgents(1,startingPort+numberOfPlatforms,
-                remainderAgents,interval,serverAddress,serverPort);
-        }
-    }
-    
-    public void killAllAgentSmith() throws StaleProxyException{
-        for (int i=0;i<listOfProcesses.size();i++){
-            listOfProcesses.get(i).destroy();
-        }
-        
-    }
-    private void createPlatformContainerAgents(int numberOfPlatforms,int startingPort,
-            int numberOfAgentPerContainers,long interval, String serverAddress, int serverPort){
-        AgentController agentSmith;
-        for (int i=0;i<numberOfPlatforms;i++){
-            //Start a platform
-            String createPlatformString = "java jade.Boot -gui -port "+(startingPort+i)+" -platform-id "+"Platform-"+i;
-            System.out.println(createPlatformString);
-            Process p = Terminal.executeNoError(createPlatformString);
-            
-            //listOfProcesses.add(p);
-            /*
-            //Profile mProfile = new ProfileImpl("192.168.0.102", startingPort+i,"Platform-"+i+":"+(startingPort+i),false);
-            Profile mProfile = new ProfileImpl("192.168.0.102", startingPort+i,null);
-            jade.wrapper.AgentContainer mainContainer = rt.createMainContainer(mProfile);
-            System.out.println("main container created "+mainContainer);
-            mainContainersList.add(mainContainer);
-            */
-            
-            
-            
-            //ProfileImpl pContainer = new ProfileImpl(null, startingPort+i,null);
-            //jade.wrapper.AgentContainer agentContainer = rt.createAgentContainer(pContainer);
-            //System.out.println("containers created "+pContainer);
-            StringBuffer agentsListString = new StringBuffer();
-            for (int j=0;j<numberOfAgentPerContainers;j++){
-                /*
-                try {
-                    Object[] smithArgs = new Object[4];
-                    smithArgs[0] = interval;
-                    smithArgs[1] = serverAddress;
-                    smithArgs[2] = serverPort;
-                    smithArgs[3] = getAID(); //the coordinator's aid
-                    agentSmith = agentContainer.createNewAgent("Platform-"+i+"_Smith-"+j,
-                            "agentsmith.AgentSmith", smithArgs);
-                    agentSmith.start();
-                    agentsList.add(agentSmith);
-                } catch (StaleProxyException ex) {
-                    Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
-                } */
-                String coordinatorName = getAID().getName();
-                String coordinatorAddress = getAID().getAddressesArray()[0];
-                agentsListString.append("Platform-"+i+"_Smith-"+j+":agentsmith.AgentSmith("+interval
-                        +COMMA+serverAddress+COMMA+serverPort+COMMA+coordinatorName
-                        +COMMA+coordinatorAddress+");");
-            }
-            //String createAgentsString = "cd C:\\Users\\Ethan_Hunt\\Documents\\NetBeansProjects\\TheAgentsAttack\\src\njava jade.Boot -port "+(startingPort+i)+" -container \""+agentsListString.toString()+"\"";
-            String createAgentsString = "cd /home/ubuntu/Codes/TheAgentsAttack/src && java jade.Boot -port "+(startingPort+i)+" -container \""+agentsListString.toString()+"\"";
-            System.out.println(createAgentsString);
-            Process p2 = Terminal.executeNoError(createAgentsString);
-            //System.out.println("java jade.Boot -port "+(startingPort+i)+" -container \""+agentsListString.toString()+"\"");
-            /*
-            final File file = new File("createAgents.bat");
+        int type = ge.getType();
+        if (type == MESSAGE_LAUNCH_AGENT){
+            SmithParameter sp = (SmithParameter)ge.getParameter(0);
+            //send message to the subcoordinator to launch agent
+            System.out.println(sp.numberOfAgent);
+            ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+            msg.addReceiver(new AID("SC_Platform-"+0, AID.ISLOCALNAME));
+            msg.setLanguage("English");
             try {
-                file.createNewFile();
-                PrintWriter writer = new PrintWriter(file, "UTF-8");
-                writer.println(createAgentsString);
-                writer.close();
-                Terminal.executeNoError("start createAgents.bat");
+                msg.setContentObject(sp);
             } catch (IOException ex) {
                 Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
             }
-            */
-            
+            //msg.setContent("launch agents");
+            send(msg);
             
         }
     }
+    
+    private void startAgentSmiths(int numberOfAgents, long interval, String serverAddress, int serverPort ){
+        
+    }
+    
+    public class SendMessage extends OneShotBehaviour {
+        
+        private ACLMessage msg;
+        
+        public SendMessage(ACLMessage msg){
+            super();
+            this.msg = msg;
+        }
+        
+        @Override
+        public void action() {
+            send(msg);
+            System.out.println("****I Sent Message to::> R1 *****"+"\n"+
+                                "The Content of My Message is::>"+ msg.getContent());
+            
+            //GuiEvent ge = new GuiEvent(this, AgentCommGUI.MESSAGE_SENT);
+            //ge.addParameter(msg);
+            //postGuiEvent(ge);
+        }
+    }
+
+
+    
+    public class ReceiveMessage extends CyclicBehaviour {
+   // Variable to Hold the content of the received Message
+        private String Message_Performative;
+        private String Message_Content;
+        private String SenderName;
+        private String MyPlan;
+
+        public void action() {
+            ACLMessage msg = receive();
+            if(msg != null) {
+                Message_Performative = msg.getPerformative(msg.getPerformative());
+                Message_Content = msg.getContent();
+                SenderName = msg.getSender().getLocalName();
+                System.out.println(" ****I Received a Message***" +"\n"+
+                        "The Sender Name is::>"+ SenderName+"\n"+
+                        "The Content of the Message is::> " + Message_Content + "\n"+
+                        "::: And Performative is::> " + Message_Performative + "\n");
+                System.out.println("ooooooooooooooooooooooooooooooooooooooo");
+
+                if (Message_Performative.equals("REQUEST")&& Message_Content.equals("") ){
+                    ///stub
+                }
+
+            }
+
+        } 
+    }
+
+    
+    public static void main(String[]args){
+        // Get a hold on JADE runtime
+        Runtime rt = Runtime.instance();
+        // Exit the JVM when there are no more containers around
+        rt.setCloseVM(true);
+        System.out.print("runtime created\n");
+        
+        ProfileImpl mProfile = new ProfileImpl(null,1099,null);
+        jade.wrapper.AgentContainer mainContainer = rt.createMainContainer(mProfile);
+        
+        ProfileImpl pContainer = new ProfileImpl();//null, startingPort+i,null);
+        jade.wrapper.AgentContainer agentContainer = rt.createAgentContainer(pContainer);
+        
+        //Start the Agent Coordinator
+        AgentController agentCoordinator;
+        Object[] coordinatorArgs = new Object[1];
+        coordinatorArgs[0]="0";
+        try {
+            agentCoordinator = agentContainer.createNewAgent("Platform-"+0+"_Coordinator-"+0,
+                    "agentcoordinator.AgentCoordinator", coordinatorArgs);
+            agentCoordinator.start();
+        } catch (StaleProxyException ex) {
+            Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        //Start the local Agent SubCoordinator
+        AgentController agentSubCoodinator;
+        Object[] subCoordArgs = new Object[1];
+        coordinatorArgs[0]="0";
+        try {
+            agentSubCoodinator = agentContainer.createNewAgent("SC_Platform-"+0,
+                    "agentsubcoordinator.AgentSubCoordinator", subCoordArgs);
+            agentSubCoodinator.start();
+        } catch (StaleProxyException ex) {
+            Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        //Start the platform (and main container) in a remote machine
+        Process p= Terminal.execute("ssh -i /home/ubuntu/14_LP1_KEY_D7001D_CHASAT-4.pem 54.171.91.143");
+        PrintStream out = new PrintStream(p.getOutputStream());
+        BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
+        out.println("java jade.Boot -gui\njava jade.Boot -container SC:agentsubcoordinator.AgentSubCoordinator");
+        try {
+            while (in.ready()) {
+                String s = in.readLine();
+                System.out.println(s);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        //out.println("exit");
+
+        //Start the Agent Coordinator
+        
+        
+    }   
     
 }

@@ -5,9 +5,11 @@
  */
 package agentcoordinator;
 
+import jade.gui.GuiEvent;
 import jade.wrapper.StaleProxyException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import messageclasses.SmithParameter;
 
 /**
  *
@@ -195,7 +197,19 @@ public class AgentCoordinatorUI extends javax.swing.JFrame {
                 long interval = Long.decode(textFieldIntervalOfTicker.getText());
                 String serverAddress = textFieldServerAddress.getText();
                 int serverPort = Integer.decode(textFieldServerPort.getText());
-                myAgent.startAgentSmiths(numberOfAgent,interval,serverAddress,serverPort);
+                //myAgent.startAgentSmiths(numberOfAgent,interval,serverAddress,serverPort);
+                
+                GuiEvent ge = new GuiEvent(this, AgentCoordinator.MESSAGE_LAUNCH_AGENT);
+                SmithParameter sp = new SmithParameter();
+                sp.type=1;
+                sp.serverAddress = serverAddress;
+                sp.interval = interval;
+                sp.numberOfAgent = numberOfAgent;
+                sp.serverPort = serverPort;
+                ge.addParameter(sp);
+                myAgent.postGuiEvent(ge);
+                
+                
             }
         }).start();
         buttonLaunchAgents.setEnabled(false);
@@ -210,13 +224,14 @@ public class AgentCoordinatorUI extends javax.swing.JFrame {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
-                   myAgent.killAllAgentSmith();
+               // try {
+                  // myAgent.killAllAgentSmith();
+                   
                    buttonLaunchAgents.setEnabled(true);
                    buttonKillAllAgents.setEnabled(false);
-                } catch (StaleProxyException ex) {
-                    Logger.getLogger(AgentCoordinatorUI.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                //} catch (StaleProxyException ex) {
+                //    Logger.getLogger(AgentCoordinatorUI.class.getName()).log(Level.SEVERE, null, ex);
+                //}
             }
         }).start();
     }//GEN-LAST:event_buttonKillAllAgentsActionPerformed

@@ -228,14 +228,19 @@ public class AgentCoordinator extends GuiAgent {
         }
         
         //run stuff
-        String command = "java -cp /home/ubuntu/JADE-COURSE-2014/jade/lib/jade.jar jade.Boot -port 1099\n"
-               + "cd /home/ubuntu/Codes/TheAgentsAttack/src&&java jade.Boot -container SC:agentsubcoordinator.AgentSubCoordinator";//;java jade.Boot -container "SC:agentsubcoordinator.AgentSubCoordinator";";
-        Channel channel = null;
+        String commandPlatform = "java -cp /home/ubuntu/JADE-COURSE-2014/jade/lib/jade.jar jade.Boot -port 1099";
+        String commandSCAgent = "cd /home/ubuntu/Codes/TheAgentsAttack/src&&java jade.Boot -container SC:agentsubcoordinator.AgentSubCoordinator";
+        Channel channel1 = null;
+        Channel channel2 = null;
         try {
-            channel = session.openChannel("exec");
-            ((ChannelExec)channel).setCommand(command);
-            ((ChannelExec)channel).setErrStream(System.err);
-            channel.connect();
+            channel1 = session.openChannel("exec");
+            ((ChannelExec)channel1).setCommand(commandPlatform);
+            ((ChannelExec)channel1).setErrStream(System.err);
+            channel1.connect();
+            channel2 = session.openChannel("exec");
+            ((ChannelExec)channel2).setCommand(commandSCAgent);
+            ((ChannelExec)channel2).setErrStream(System.err);
+            channel2.connect();
         } catch (JSchException ex) {
             Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
         }

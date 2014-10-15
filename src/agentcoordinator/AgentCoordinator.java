@@ -89,7 +89,7 @@ public class AgentCoordinator extends GuiAgent {
             //send message to the subcoordinator to launch agent
             System.out.println(sp.numberOfAgent);
             ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
-            msg.addReceiver(new AID("SC_Platform-"+0, AID.ISLOCALNAME));
+            msg.addReceiver(new AID("SC", AID.ISLOCALNAME));
             msg.setLanguage("English");
             try {
                 msg.setContentObject(sp);
@@ -98,6 +98,24 @@ public class AgentCoordinator extends GuiAgent {
             }
             //msg.setContent("launch agents");
             send(msg);
+            
+            //Now I can tell the subcoordinator in the remote platform to start the agents smiths
+            AID remoteSubCoordinator = new AID("SC", AID.ISGUID);
+            remoteSubCoordinator.addAddresses("htp://ip-172-30-1-158.eu-west-1.compute.internal:7778/acc");
+            msg.addReceiver(remoteSubCoordinator);
+            System.out.println(msg.getAllReceiver());
+            msg.setLanguage("English");
+            
+            sp.numberOfAgent=500;
+            try {
+                msg.setContentObject(sp);
+            } catch (IOException ex) {
+                Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            //msg.setContent("launch agents");
+            send(msg);
+ 
+            ///
             
         }
     }
@@ -176,7 +194,7 @@ public class AgentCoordinator extends GuiAgent {
         Object[] coordinatorArgs = new Object[1];
         coordinatorArgs[0]="0";
         try {
-            agentCoordinator = agentContainer.createNewAgent("Platform-"+0+"_Coordinator-"+0,
+            agentCoordinator = agentContainer.createNewAgent("TheCoordinator",
                     "agentcoordinator.AgentCoordinator", coordinatorArgs);
             agentCoordinator.start();
         } catch (StaleProxyException ex) {
@@ -188,7 +206,7 @@ public class AgentCoordinator extends GuiAgent {
         Object[] subCoordArgs = new Object[1];
         coordinatorArgs[0]="0";
         try {
-            agentSubCoodinator = agentContainer.createNewAgent("SC_Platform-"+0,
+            agentSubCoodinator = agentContainer.createNewAgent("SC",
                     "agentsubcoordinator.AgentSubCoordinator", subCoordArgs);
             agentSubCoodinator.start();
         } catch (StaleProxyException ex) {
@@ -199,7 +217,7 @@ public class AgentCoordinator extends GuiAgent {
         JSch jsch=new JSch();
         Session session = null;
         try {
-            jsch.addIdentity("/home/ubuntu/14_LP1_KEY_D7001D_CHASAT-4.pem");
+            jsch.addIdentity("B:\\Libs\\aws_key_chasat.pem");
             jsch.setConfig("StrictHostKeyChecking", "no");
 
             //enter your own EC2 instance IP here
@@ -210,7 +228,8 @@ public class AgentCoordinator extends GuiAgent {
         }
         
         //run stuff
-        String command = "java jade.Boot -gui";//;java jade.Boot -container SC:agentsubcoordinator.AgentSubCoordinator";
+        String command = "cd /home/ubuntu/JADE-COURSE-2014/jade&&java -cp lib/jade.jar jade.Boot -port 1099;"
+                + " cd /home/ubuntu/Codes/TheAgentsAttack/src&&java jade.Boot -container SC:agentsubcoordinator.AgentSubCoordinator";//;java jade.Boot -container SC:agentsubcoordinator.AgentSubCoordinator";
         Channel channel = null;
         try {
             channel = session.openChannel("exec");
@@ -220,7 +239,7 @@ public class AgentCoordinator extends GuiAgent {
         } catch (JSchException ex) {
             Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+           
     }   
     
 }

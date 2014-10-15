@@ -215,7 +215,7 @@ public class AgentCoordinator extends GuiAgent {
         }
         
         String hostname = "54.171.91.143";
-        String createPlatform= "java jade.Boot -gui";
+        String createPlatform= "cd /home/ubuntu/Codes/TheAgentsAttack/src&&java agentsubcoordinator.AgentSubCoordinator";
         Terminal.execute("ssh -o StrictHostKeyChecking=no -i /home/ubuntu/aws_key_chasat.pem "+hostname+" "+createPlatform);
         
         //Start the platform (and main container) in a remote machine

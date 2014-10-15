@@ -161,7 +161,7 @@ public class AgentSubCoordinator extends Agent {
                 
                 if (msg.getContentObject()!=null){
                     sp = (SmithParameter)msg.getContentObject();
-                    if (Message_Performative.equals("REQUEST") && sp.type==1 ){
+                    if (Message_Performative.equals("REQUEST") && sp.type==1 && sp.numberOfAgent>0 ){
                         startAgentSmiths(sp.numberOfAgent,sp.interval, sp.serverAddress, sp.serverPort );
                     }
                 }
@@ -179,8 +179,36 @@ public class AgentSubCoordinator extends Agent {
 
         }
 
-    } 
-}
+    }
+    
+    
+    }
+    
+    public static void main(String[]args){
+        // Get a hold on JADE runtime
+        Runtime rt = Runtime.instance();
+        // Exit the JVM when there are no more containers around
+        rt.setCloseVM(true);
+        System.out.print("runtime created\n");
+        
+        ProfileImpl mProfile = new ProfileImpl(null,1099,null);
+        jade.wrapper.AgentContainer mainContainer = rt.createMainContainer(mProfile);
+        
+        ProfileImpl pContainer = new ProfileImpl();//null, startingPort+i,null);
+        jade.wrapper.AgentContainer agentContainer = rt.createAgentContainer(pContainer);
+        
+        //Start the local Agent SubCoordinator
+        AgentController agentSubCoodinator;
+        Object[] subCoordArgs = new Object[1];
+        try {
+            agentSubCoodinator = agentContainer.createNewAgent("SC",
+                    "agentsubcoordinator.AgentSubCoordinator", subCoordArgs);
+            agentSubCoodinator.start();
+        } catch (StaleProxyException ex) {
+            Logger.getLogger(AgentSubCoordinator.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
 
 
 

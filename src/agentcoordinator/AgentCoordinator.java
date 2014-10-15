@@ -217,7 +217,7 @@ public class AgentCoordinator extends GuiAgent {
         JSch jsch=new JSch();
         Session session = null;
         try {
-            jsch.addIdentity("B:\\Libs\\aws_key_chasat.pem");
+            jsch.addIdentity("/home/ubuntu/aws_key_chasat.pem");
             jsch.setConfig("StrictHostKeyChecking", "no");
 
             //enter your own EC2 instance IP here
@@ -228,8 +228,8 @@ public class AgentCoordinator extends GuiAgent {
         }
         
         //run stuff
-        String command = "cd /home/ubuntu/JADE-COURSE-2014/jade&&java -cp lib/jade.jar jade.Boot -port 1099;"
-                + " cd /home/ubuntu/Codes/TheAgentsAttack/src&&java jade.Boot -container SC:agentsubcoordinator.AgentSubCoordinator";//;java jade.Boot -container SC:agentsubcoordinator.AgentSubCoordinator";
+        String command = "java -cp /home/ubuntu/JADE-COURSE-2014/jade/lib/jade.jar jade.Boot -port 1099\n"
+               + "cd /home/ubuntu/Codes/TheAgentsAttack/src&&java jade.Boot -container SC:agentsubcoordinator.AgentSubCoordinator";//;java jade.Boot -container "SC:agentsubcoordinator.AgentSubCoordinator";";
         Channel channel = null;
         try {
             channel = session.openChannel("exec");

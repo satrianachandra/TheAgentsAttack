@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 import messageclasses.SmithParameter;
 import utils.Terminal;
 
-import com.jcraft.jsch.*;
+
 
 /**
  *
@@ -41,6 +41,7 @@ public class AgentCoordinator extends GuiAgent {
     public static final int MESSAGE_RECEIVED = 1;
     public static final int MESSAGE_SENT = 2;
     public static final int MESSAGE_LAUNCH_AGENT = 3;
+    public static final String SEMICOLON = ";";
     //an example of adding 1 remote platforms
     public AID remoteDF;
     private AgentCoordinatorUI agentUI;
@@ -213,7 +214,12 @@ public class AgentCoordinator extends GuiAgent {
             Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
         }
         
+        String hostname = "54.171.91.143";
+        String createPlatform= "java jade.Boot -gui";
+        Terminal.execute("ssh -o StrictHostKeyChecking=no -i /home/ubuntu/aws_key_chasat.pem "+hostname+" "+createPlatform);
+        
         //Start the platform (and main container) in a remote machine
+        /*
         JSch jsch=new JSch();
         Session session = null;
         try {
@@ -244,6 +250,7 @@ public class AgentCoordinator extends GuiAgent {
         } catch (JSchException ex) {
             Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
         }
+        */
            
     }   
     

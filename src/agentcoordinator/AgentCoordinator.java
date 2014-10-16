@@ -5,6 +5,7 @@
  */
 package agentcoordinator;
 
+import agentsubcoordinator.AgentSubCoordinatorData;
 import jade.core.AID;
 import jade.core.ProfileImpl;
 import jade.core.behaviours.CyclicBehaviour;
@@ -19,12 +20,10 @@ import jade.lang.acl.ACLMessage;
 import jade.core.Runtime;
 import jade.wrapper.AgentController;
 import jade.wrapper.StaleProxyException;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import messageclasses.SmithParameter;
@@ -40,52 +39,55 @@ public class AgentCoordinator extends GuiAgent {
 
     public static final int MESSAGE_RECEIVED = 1;
     public static final int MESSAGE_SENT = 2;
-    public static final int MESSAGE_LAUNCH_AGENT = 3;
+    public static final int MESSAGE_LAUNCH_AGENTS = 3;
+    public static final int MESSAGE_KILL_AGENTS = 4;
+    
     public static final String SEMICOLON = ";";
     //an example of adding 1 remote platforms
     public AID remoteDF;
     private AgentCoordinatorUI agentUI;
+    public static List<AgentSubCoordinatorData>listRemoteSubCoordinators;
     
     protected void setup() {
-            /** Registration with the DF */
-            DFAgentDescription dfd = new DFAgentDescription();
-            ServiceDescription sd = new ServiceDescription();
-            sd.setType("CoordinatorAgent");
-            sd.setName(getName());
-            sd.setOwnership("JADE");
-            sd.addOntologies("JADEAgent");
-            dfd.setName(getAID());
+        /** Registration with the DF */
+        DFAgentDescription dfd = new DFAgentDescription();
+        ServiceDescription sd = new ServiceDescription();
+        sd.setType("CoordinatorAgent");
+        sd.setName(getName());
+        sd.setOwnership("JADE");
+        sd.addOntologies("JADEAgent");
+        dfd.setName(getAID());
 
-            dfd.addServices(sd);
-            try {
-            DFService.register(this,dfd);
-            } catch (FIPAException e) {
-            System.err.println(getLocalName()+" registration with DF unsucceeded. Reason: "+e.getMessage());
-            //doDelete();
-            }
-            /*
-            AID aDF = new AID("df@Platform2",AID.ISGUID);
-            aDF.addAddresses("http://sakuragi:54960/acc");
-            */
-            agentUI = new AgentCoordinatorUI();
-            agentUI.setAgent(this);
-            agentUI.setTitle("Coordinator Agent " + this.getName());
-            //try {
-                //RefetchAgentsList();
-                //RA1.populateAgentsListOnGUI();
-            //} catch (FIPAException ex) {
-                //Logger.getLogger(AgentCommGUI.class.getName()).log(Level.SEVERE, null, ex);
-            //}
-            ReceiveMessage rm = new ReceiveMessage();
-            addBehaviour(rm);
+        dfd.addServices(sd);
+        try {
+        DFService.register(this,dfd);
+        } catch (FIPAException e) {
+        System.err.println(getLocalName()+" registration with DF unsucceeded. Reason: "+e.getMessage());
+        //doDelete();
         }
+        /*
+        AID aDF = new AID("df@Platform2",AID.ISGUID);
+        aDF.addAddresses("http://sakuragi:54960/acc");
+        */
+        agentUI = new AgentCoordinatorUI();
+        agentUI.setAgent(this);
+        agentUI.setTitle("Coordinator Agent " + this.getName());
+        //try {
+            //RefetchAgentsList();
+            //RA1.populateAgentsListOnGUI();
+        //} catch (FIPAException ex) {
+            //Logger.getLogger(AgentCommGUI.class.getName()).log(Level.SEVERE, null, ex);
+        //}
+        ReceiveMessage rm = new ReceiveMessage();
+        addBehaviour(rm);
+    }
     
     
     
     @Override
     protected void onGuiEvent(GuiEvent ge) {
         int type = ge.getType();
-        if (type == MESSAGE_LAUNCH_AGENT){
+        if (type == MESSAGE_LAUNCH_AGENTS){
             SmithParameter sp = (SmithParameter)ge.getParameter(0);
             //send message to the subcoordinator to launch agent
             System.out.println(sp.numberOfAgent);
@@ -101,22 +103,16 @@ public class AgentCoordinator extends GuiAgent {
             send(msg);
             
             //Now I can tell the subcoordinator in the remote platform to start the agents smiths
-            AID remoteSubCoordinator = new AID("SC", AID.ISGUID);
-            remoteSubCoordinator.addAddresses("htp://ip-172-30-1-158.eu-west-1.compute.internal:7778/acc");
-            msg.addReceiver(remoteSubCoordinator);
-            System.out.println(msg.getAllReceiver());
+            msg.addReceiver(listRemoteSubCoordinators.get(0).getAID());
+            System.out.println("ALL receivers: "+msg.getAllReceiver());
             msg.setLanguage("English");
-            
-            sp.numberOfAgent=500;
+            sp.numberOfAgent=500; //set the number of agents depending on the requirement
             try {
                 msg.setContentObject(sp);
             } catch (IOException ex) {
                 Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
             }
-            //msg.setContent("launch agents");
             send(msg);
- 
-            ///
             
         }
     }
@@ -184,9 +180,20 @@ public class AgentCoordinator extends GuiAgent {
         rt.setCloseVM(true);
         System.out.print("runtime created\n");
         
+        //start main container
         ProfileImpl mProfile = new ProfileImpl(null,1099,null);
         jade.wrapper.AgentContainer mainContainer = rt.createMainContainer(mProfile);
         
+        
+        //starting RMA agent for monitoring purposes
+        try {
+            AgentController agentRMA = mainContainer.createNewAgent("RMA","jade.tools.rma.rma", null);
+            agentRMA.start();
+        } catch (StaleProxyException ex) {
+            Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        //creating container for other agents
         ProfileImpl pContainer = new ProfileImpl();//null, startingPort+i,null);
         jade.wrapper.AgentContainer agentContainer = rt.createAgentContainer(pContainer);
         
@@ -214,47 +221,47 @@ public class AgentCoordinator extends GuiAgent {
             Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        String hostname = "54.171.91.143";
-        String setClasspath = "export CLASSPATH=/home/ubuntu/JADE-COURSE-2014/jade/lib/commons-codec/commons-codec-1.3.jar:$CLASSPATH;"
-                + " export CLASSPATH=/home/ubuntu/JADE-COURSE-2014/jade/lib/jadeExamples.jar:$CLASSPATH;"
-                + " export CLASSPATH=/home/ubuntu/JADE-COURSE-2014/jade/lib/jade.jar:$CLASSPATH;";
-String createPlatform= " cd /home/ubuntu/Codes/TheAgentsAttack/src&&java agentsubcoordinator.AgentSubCoordinator;";
-        Terminal.execute("ssh -o StrictHostKeyChecking=no -i /home/ubuntu/aws_key_chasat.pem "+hostname+" "+"\""+setClasspath+createPlatform+"\"");
         
-        //Start the platform (and main container) in a remote machine
-        /*
-        JSch jsch=new JSch();
-        Session session = null;
-        try {
-            jsch.addIdentity("/home/ubuntu/aws_key_chasat.pem");
-            jsch.setConfig("StrictHostKeyChecking", "no");
-
-            //enter your own EC2 instance IP here
-            session=jsch.getSession("ubuntu", "54.171.91.143", 22);
-            session.connect();
-        } catch (JSchException ex) {
-            Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        //Add remote machines
+        listRemoteSubCoordinators = new ArrayList<>();
+        AID remoteSubCoordinator = new AID("SC", AID.ISGUID);
+        remoteSubCoordinator.addAddresses("htp://ip-172-30-1-158.eu-west-1.compute.internal:7778/acc");
+        listRemoteSubCoordinators.add(new AgentSubCoordinatorData("172.30.1.158", remoteSubCoordinator));
         
-        //run stuff
-        String commandPlatform = "java -cp /home/ubuntu/JADE-COURSE-2014/jade/lib/jade.jar jade.Boot -port 1099";
-        String commandSCAgent = "cd /home/ubuntu/Codes/TheAgentsAttack/src&&java jade.Boot -container SC:agentsubcoordinator.AgentSubCoordinator";
-        Channel channel1 = null;
-        Channel channel2 = null;
-        try {
-            channel1 = session.openChannel("exec");
-            ((ChannelExec)channel1).setCommand(commandPlatform);
-            ((ChannelExec)channel1).setErrStream(System.err);
-            channel1.connect();
-            channel2 = session.openChannel("exec");
-            ((ChannelExec)channel2).setCommand(commandSCAgent);
-            ((ChannelExec)channel2).setErrStream(System.err);
-            channel2.connect();
-        } catch (JSchException ex) {
-            Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        */
+        //Start the JADE platform and Agent Subcoordinator in the remote machines
+        String hostname = listRemoteSubCoordinators.get(0).getMachineIP();
+        String setClasspath = "CLASSPATH=/home/ubuntu/JADE-COURSE-2014/jade/lib/commons-codec/commons-codec-1.3.jar:$CLASSPATH;"
+                + " CLASSPATH=/home/ubuntu/JADE-COURSE-2014/jade/lib/jadeExamples.jar:$CLASSPATH;"
+                + " CLASSPATH=/home/ubuntu/JADE-COURSE-2014/jade/lib/jade.jar:$CLASSPATH;";
+        String createPlatformAndAgents= " cd /home/ubuntu/Codes/TheAgentsAttack/src&&java agentsubcoordinator.AgentSubCoordinator;";
+        Terminal.execute("ssh -o StrictHostKeyChecking=no -i /home/ubuntu/aws_key_chasat.pem "+hostname+" "+"\""+setClasspath+createPlatformAndAgents+"\"");
            
-    }   
+    }
+    
+    public void killAllAgentSmith(){
+        //send a kill message to the AgentSubCoordinator  
+        
+        //the local
+        ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+        msg.addReceiver(new AID("SC", AID.ISLOCALNAME));
+        msg.setLanguage("English");
+        try {
+            SmithParameter sp = new SmithParameter();
+            sp.type=2;
+            msg.setContentObject(sp);
+        } catch (IOException ex) {
+            Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        //msg.setContent("launch agents");
+        send(msg);
+        
+        
+        //the remotes
+        msg.addReceiver(listRemoteSubCoordinators.get(0).getAID());
+        send(msg);
+        
+        
+    }
+        
     
 }

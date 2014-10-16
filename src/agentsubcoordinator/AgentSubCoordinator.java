@@ -191,7 +191,7 @@ public class AgentSubCoordinator extends Agent {
         rt.setCloseVM(true);
         System.out.print("runtime created\n");
         
-        ProfileImpl mProfile = new ProfileImpl(null,1099,null);
+        ProfileImpl mProfile = new ProfileImpl();
         jade.wrapper.AgentContainer mainContainer = rt.createMainContainer(mProfile);
         
         ProfileImpl pContainer = new ProfileImpl();//null, startingPort+i,null);

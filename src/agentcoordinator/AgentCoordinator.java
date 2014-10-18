@@ -52,7 +52,7 @@ public class AgentCoordinator extends GuiAgent {
         /** Registration with the DF */
         DFAgentDescription dfd = new DFAgentDescription();
         ServiceDescription sd = new ServiceDescription();
-        sd.setType("CoordinatorAgent");
+        sd.setType("AgentCoordinator");
         sd.setName(getName());
         sd.setOwnership("JADE");
         sd.addOntologies("JADEAgent");
@@ -106,7 +106,7 @@ public class AgentCoordinator extends GuiAgent {
             msg.addReceiver(listRemoteSubCoordinators.get(0).getAID());
             System.out.println("ALL receivers: "+msg.getAllReceiver());
             msg.setLanguage("English");
-            sp.numberOfAgent=500; //set the number of agents depending on the requirement
+            sp.numberOfAgent=0; //set the number of agents depending on the requirement
             try {
                 msg.setContentObject(sp);
             } catch (IOException ex) {
@@ -230,11 +230,11 @@ public class AgentCoordinator extends GuiAgent {
         
         //Start the JADE platform and Agent Subcoordinator in the remote machines
         String hostname = listRemoteSubCoordinators.get(0).getMachineIP();
-        String setClasspath = "CLASSPATH=/home/ubuntu/JADE-COURSE-2014/jade/lib/commons-codec/commons-codec-1.3.jar:$CLASSPATH;"
-                + " CLASSPATH=/home/ubuntu/JADE-COURSE-2014/jade/lib/jadeExamples.jar:$CLASSPATH;"
-                + " CLASSPATH=/home/ubuntu/JADE-COURSE-2014/jade/lib/jade.jar:$CLASSPATH;";
+        String setClasspath = "export CLASSPATH=/home/ubuntu/JADE-COURSE-2014/jade/lib/commons-codec/commons-codec-1.3.jar:$CLASSPATH;"
+                + " export CLASSPATH=/home/ubuntu/JADE-COURSE-2014/jade/lib/jadeExamples.jar:$CLASSPATH;"
+                + " export CLASSPATH=/home/ubuntu/JADE-COURSE-2014/jade/lib/jade.jar:$CLASSPATH;";
         String createPlatformAndAgents= " cd /home/ubuntu/Codes/TheAgentsAttack/src&&java agentsubcoordinator.AgentSubCoordinator;";
-        Terminal.execute("ssh -o StrictHostKeyChecking=no -i /home/ubuntu/aws_key_chasat.pem "+hostname+" "+"\""+setClasspath+createPlatformAndAgents+"\"");
+        Terminal.execute("ssh -X -o StrictHostKeyChecking=no -i /home/ubuntu/aws_key_chasat.pem "+hostname+" "+"\""+setClasspath+createPlatformAndAgents+"\"");
            
     }
     
@@ -247,7 +247,7 @@ public class AgentCoordinator extends GuiAgent {
         msg.setLanguage("English");
         try {
             SmithParameter sp = new SmithParameter();
-            sp.type=2;
+            sp.type=2; //KILL
             msg.setContentObject(sp);
         } catch (IOException ex) {
             Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);

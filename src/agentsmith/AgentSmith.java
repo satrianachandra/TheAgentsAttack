@@ -10,6 +10,10 @@ import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.core.behaviours.TickerBehaviour;
+import jade.domain.DFService;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -55,6 +59,24 @@ public class AgentSmith extends Agent {
             coordinatorAID.addAddresses(args[4].toString());
             */
         }
+        
+        //registration to the DF, so we can search the agents later, need to check if necessary
+        DFAgentDescription dfd = new DFAgentDescription();
+        ServiceDescription sd = new ServiceDescription();
+        sd.setType("AgentSmith");
+        sd.setName(getName());
+        sd.setOwnership("JADE");
+        sd.addOntologies("JADEAgent");
+        dfd.setName(getAID());
+
+        dfd.addServices(sd);
+        try {
+            DFService.register(this,dfd);
+        } catch (FIPAException e) {
+            System.err.println(getLocalName()+" registration with DF unsucceeded. Reason: "+e.getMessage());
+        //doDelete();
+        }
+        
         
         addBehaviour(new TickerBehaviour(this, interval) {
             

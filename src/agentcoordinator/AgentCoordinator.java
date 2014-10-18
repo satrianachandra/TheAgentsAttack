@@ -103,16 +103,17 @@ public class AgentCoordinator extends GuiAgent {
             send(msg);
             
             //Now I can tell the subcoordinator in the remote platform to start the agents smiths
-            msg.addReceiver(listRemoteSubCoordinators.get(0).getAID());
-            System.out.println("ALL receivers: "+msg.getAllReceiver());
-            msg.setLanguage("English");
+            ACLMessage msg2 = new ACLMessage(ACLMessage.REQUEST);
+            msg2.setLanguage("English");
+            msg2.addReceiver(listRemoteSubCoordinators.get(0).getAID());
+            System.out.println("remote: "+listRemoteSubCoordinators.get(0).getAID().toString());
             sp.numberOfAgent=0; //set the number of agents depending on the requirement
             try {
-                msg.setContentObject(sp);
+                msg2.setContentObject(sp);
             } catch (IOException ex) {
                 Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
             }
-            send(msg);
+            send(msg2);
             
         }
     }

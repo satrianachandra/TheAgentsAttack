@@ -90,8 +90,7 @@ public class AgentSubCoordinator extends Agent {
         //mainContainersList.add(mainContainer);
 
         ProfileImpl pContainer = new ProfileImpl();//null, startingPort+i,null);
-        jade.wrapper.AgentContainer agentContainer = rt.createAgentContainer(pContainer);
-        mainContainersList.add(agentContainer);
+        agentContainer = rt.createAgentContainer(pContainer);
         System.out.println("containers created "+pContainer);
         for (int j=0;j<numberOfAgents;j++){
             try {

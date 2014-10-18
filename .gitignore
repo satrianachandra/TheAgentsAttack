@@ -4,3 +4,4 @@
 
 # Logs and databases #
 *.log
+/dist/

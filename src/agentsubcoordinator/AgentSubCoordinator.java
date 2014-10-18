@@ -45,6 +45,23 @@ public class AgentSubCoordinator extends Agent {
     
     @Override
     protected void setup() {
+        //registration to the DF, so we can search the agents later, need to check if necessary
+        DFAgentDescription dfd = new DFAgentDescription();
+        ServiceDescription sd = new ServiceDescription();
+        sd.setType("AgentSubCoordinator");
+        sd.setName(getName());
+        sd.setOwnership("JADE");
+        sd.addOntologies("JADEAgent");
+        dfd.setName(getAID());
+
+        dfd.addServices(sd);
+        try {
+            DFService.register(this,dfd);
+        } catch (FIPAException e) {
+            System.err.println(getLocalName()+" registration with DF unsucceeded. Reason: "+e.getMessage());
+        //doDelete();
+        }
+        
         ReceiveMessage rm = new ReceiveMessage();
         addBehaviour(rm);
     }

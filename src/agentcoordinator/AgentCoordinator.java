@@ -230,9 +230,12 @@ public class AgentCoordinator extends GuiAgent {
         
         //Start the JADE platform and Agent Subcoordinator in the remote machines
         String hostname = listRemoteSubCoordinators.get(0).getMachineIP();
+        /*
         String setClasspath = "export CLASSPATH=/home/ubuntu/JADE-COURSE-2014/jade/lib/commons-codec/commons-codec-1.3.jar:$CLASSPATH;"
                 + " export CLASSPATH=/home/ubuntu/JADE-COURSE-2014/jade/lib/jadeExamples.jar:$CLASSPATH;"
                 + " export CLASSPATH=/home/ubuntu/JADE-COURSE-2014/jade/lib/jade.jar:$CLASSPATH;";
+        */
+        String setClasspath = "export CLASSPATH=:$CLASSPATH;";
         String createPlatformAndAgents= " cd /home/ubuntu/Codes/TheAgentsAttack/src&&java agentsubcoordinator.AgentSubCoordinator;";
         Terminal.execute("ssh -X -o StrictHostKeyChecking=no -i /home/ubuntu/aws_key_chasat.pem "+hostname+" "+"\""+setClasspath+createPlatformAndAgents+"\"");
            

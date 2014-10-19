@@ -91,7 +91,8 @@ public class AgentCoordinator extends GuiAgent {
     protected void onGuiEvent(GuiEvent ge) {
         int type = ge.getType();
         if (type == MESSAGE_LAUNCH_AGENTS){
-            launchAllAgents((SmithParameter)ge.getParameter(0));
+            SmithParameter sp = (SmithParameter)ge.getParameter(0);
+            launchAllAgents(sp);
         }else if (type == MESSAGE_KILL_AGENTS){
             killAllAgentSmith();
         }else if (type == GET_NUMBER_OF_AGENTS){
@@ -216,13 +217,13 @@ public class AgentCoordinator extends GuiAgent {
         remoteSubCoordinator.addAddresses("http://ip-172-30-1-232.eu-west-1.compute.internal:7778/acc");
         listRemoteSubCoordinators.add(new AgentSubCoordinatorData("172.30.1.232", remoteSubCoordinator));
         
-        
+        System.out.print("list size: "+listRemoteSubCoordinators.size());
         //start the agents in the remotes
         for(int i=0;i<listRemoteSubCoordinators.size();i++){
             String hostname = listRemoteSubCoordinators.get(i).getMachineIP();
             String setClasspath = "export CLASSPATH=:$CLASSPATH;";
             String createPlatformAndAgents= " cd /home/ubuntu/Codes/TheAgentsAttack/src&&java agentsubcoordinator.AgentSubCoordinator;";
-            Terminal.execute("ssh -X -o StrictHostKeyChecking=no -i /home/ubuntu/aws_key_chasat.pem "+hostname+" "+"\""+setClasspath+createPlatformAndAgents+"\"");
+            Terminal.executeNoError("ssh -X -o StrictHostKeyChecking=no -i /home/ubuntu/aws_key_chasat.pem "+hostname+" "+"\""+setClasspath+createPlatformAndAgents+"\"");
         }
            
     }
@@ -264,6 +265,7 @@ public class AgentCoordinator extends GuiAgent {
         
         //dividing the agents across machines
         int agentsPerMachine = sp.numberOfAgent/(listRemoteSubCoordinators.size()+1);
+        System.out.println("number of agents: "+agentsPerMachine);
         sp.numberOfAgent = agentsPerMachine;
         
         ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);

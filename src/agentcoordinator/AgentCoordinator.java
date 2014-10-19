@@ -214,7 +214,7 @@ public class AgentCoordinator extends GuiAgent {
         
         remoteSubCoordinator = new AID("SC@172.30.1.232:1099/JADE", AID.ISGUID);
         remoteSubCoordinator.addAddresses("http://ip-172-30-1-232.eu-west-1.compute.internal:7778/acc");
-        //Start the JADE platform and Agent Subcoordinator in the remote machines
+        listRemoteSubCoordinators.add(new AgentSubCoordinatorData("172.30.1.232", remoteSubCoordinator));
         
         
         //start the agents in the remotes

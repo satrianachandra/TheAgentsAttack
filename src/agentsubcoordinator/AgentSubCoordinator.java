@@ -298,19 +298,24 @@ public class AgentSubCoordinator extends Agent {
     */
     
     private void killAgents(){
-        try {
-            /*
-            try {
-            killAContainer((ContainerID)here());
-            } catch (Codec.CodecException ex) {
-            Logger.getLogger(AgentSubCoordinator.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (OntologyException ex) {
-            Logger.getLogger(AgentSubCoordinator.class.getName()).log(Level.SEVERE, null, ex);
-            }*/
-            agentContainer.kill();
-        } catch (StaleProxyException ex) {
-            Logger.getLogger(AgentSubCoordinator.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    /*
+                    try {
+                    killAContainer((ContainerID)here());
+                    } catch (Codec.CodecException ex) {
+                    Logger.getLogger(AgentSubCoordinator.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (OntologyException ex) {
+                    Logger.getLogger(AgentSubCoordinator.class.getName()).log(Level.SEVERE, null, ex);
+                    }*/
+                    agentContainer.kill();
+                } catch (StaleProxyException ex) {
+                    Logger.getLogger(AgentSubCoordinator.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }).start();
     }
     
     

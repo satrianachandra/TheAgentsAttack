@@ -10,9 +10,6 @@ import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.core.behaviours.TickerBehaviour;
-import jade.domain.DFService;
-import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.domain.FIPAException;
 import jade.lang.acl.ACLMessage;
 import java.io.BufferedReader;
@@ -60,6 +57,7 @@ public class AgentSmith extends Agent {
             */
         }
         
+        /*
         //registration to the DF, so we can search the agents later, need to check if necessary
         DFAgentDescription dfd = new DFAgentDescription();
         ServiceDescription sd = new ServiceDescription();
@@ -76,10 +74,11 @@ public class AgentSmith extends Agent {
             System.err.println(getLocalName()+" registration with DF unsucceeded. Reason: "+e.getMessage());
         //doDelete();
         }
-        
+        */
         
         addBehaviour(new TickerBehaviour(this, interval) {
             
+            /*
             private void informCoordinator(String content){
                 //send confirmation to the agent coordinator
                 ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
@@ -88,10 +87,11 @@ public class AgentSmith extends Agent {
                 msg.setLanguage("English");
                 msg.setContent(content);
                 
-                SendMessage smithSM = new SendMessage(msg);
-                theAgent.addBehaviour(smithSM);
+                //SendMessage smithSM = new SendMessage(msg);
+                //theAgent.addBehaviour(smithSM);
                 
             }
+            */
             
             protected void onTick() {
                 try{
@@ -109,7 +109,7 @@ public class AgentSmith extends Agent {
                 result = in.readLine();
                 System.out.println("result "+result);
                 //inform the Coordinator
-                informCoordinator("fibo result: "+result);
+                //informCoordinator("fibo result: "+result);
                 //in.close();
                 //out.close();
                 }catch(UnknownHostException e){
@@ -118,7 +118,7 @@ public class AgentSmith extends Agent {
                 } catch (IOException ex) {
                     Logger.getLogger(AgentSmith.class.getName()).log(Level.SEVERE, null, ex);
                     //inform the Coordinator
-                    informCoordinator("Failed opening TCP socket to server");
+                    //informCoordinator("Failed opening TCP socket to server");
                 
                     //System.exit(1);
                 }catch(Exception ex){
@@ -128,7 +128,7 @@ public class AgentSmith extends Agent {
             }
         } );
         
-        addBehaviour(new ReceiveMessage());
+       // addBehaviour(new ReceiveMessage());
     }
     
     @Override
@@ -145,6 +145,7 @@ public class AgentSmith extends Agent {
         
     }
     
+    /*
     public class SendMessage extends OneShotBehaviour {
     
     private ACLMessage msg;
@@ -160,10 +161,11 @@ public class AgentSmith extends Agent {
         System.out.println("****I Sent Message to::>  *****"+"\n"+
                             "The Content of My Message is::>"+ msg.getContent());
 
+        }
     }
-    }
+    */
 
-    
+    /*
     public class ReceiveMessage extends CyclicBehaviour {
    // Variable to Hold the content of the received Message
     private String Message_Performative;
@@ -174,7 +176,7 @@ public class AgentSmith extends Agent {
     public void action() {
         ACLMessage msg = receive();
         if(msg != null) {
-
+            
             Message_Performative = msg.getPerformative(msg.getPerformative());
             Message_Content = msg.getContent();
             SenderName = msg.getSender().getLocalName();
@@ -187,7 +189,9 @@ public class AgentSmith extends Agent {
         }
 
     } 
-}
+    
+    }
+    */
 
     
 }

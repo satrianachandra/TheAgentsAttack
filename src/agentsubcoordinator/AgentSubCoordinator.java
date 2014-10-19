@@ -5,6 +5,7 @@
  */
 package agentsubcoordinator;
 
+import agentcoordinator.AgentCoordinator;
 import jade.content.lang.Codec;
 import jade.content.lang.sl.SLCodec;
 import jade.content.onto.OntologyException;
@@ -28,6 +29,7 @@ import jade.domain.JADEAgentManagement.KillContainer;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.UnreadableException;
 import jade.wrapper.StaleProxyException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,7 +43,9 @@ public class AgentSubCoordinator extends Agent {
     private List<jade.wrapper.AgentContainer> mainContainersList;
     private List<AgentController> agentsList;
     private int platformNumber=0;
+    private int numberOfAgents = 0;
     public static jade.wrapper.ContainerController agentContainer;
+    private AID coordinatorAID;
     
     @Override
     protected void setup() {
@@ -61,6 +65,9 @@ public class AgentSubCoordinator extends Agent {
             System.err.println(getLocalName()+" registration with DF unsucceeded. Reason: "+e.getMessage());
         //doDelete();
         }
+        //hard coding the Coordinator's AID, will be CHANGED, ok!
+        coordinatorAID = new AID("TheCoordinator@172.30.1.217:1099/JADE", AID.ISGUID);
+        coordinatorAID.addAddresses("http://ip-172-30-1-217.eu-west-1.compute.internal:7778/acc");
         
         ReceiveMessage rm = new ReceiveMessage();
         addBehaviour(rm);
@@ -102,6 +109,7 @@ public class AgentSubCoordinator extends Agent {
                 agentSmith = agentContainer.createNewAgent("Platform-"+platformNumber+"_Smith-"+j,
                         "agentsmith.AgentSmith", smithArgs);
                 agentSmith.start();
+                numberOfAgents++;
                 agentsList.add(agentSmith);
             } catch (StaleProxyException ex) {
                 Logger.getLogger(AgentSubCoordinator.class.getName()).log(Level.SEVERE, null, ex);
@@ -110,12 +118,13 @@ public class AgentSubCoordinator extends Agent {
         
     }
     
+    /*
     private void killAllAgentSmith() throws StaleProxyException{
         for (int i=0;i<mainContainersList.size();i++){
             mainContainersList.get(i).kill();
         }
         
-    }
+    }*/
     
     private List<AID> findAgents(AID dfAID) throws FIPAException{
         DFAgentDescription template = new DFAgentDescription();
@@ -173,6 +182,7 @@ public class AgentSubCoordinator extends Agent {
     
     public void action() {
         ACLMessage msg = receive();
+        
         if(msg != null) {
 
             Message_Performative = msg.getPerformative(msg.getPerformative());
@@ -184,23 +194,40 @@ public class AgentSubCoordinator extends Agent {
                 
                 if (msg.getContentObject()!=null){
                     sp = (SmithParameter)msg.getContentObject();
-                    if (Message_Performative.equals("REQUEST") && sp.type==1 && sp.numberOfAgent>0 ){
+                    if (Message_Performative.equals("REQUEST") && sp.type==AgentCoordinator.MESSAGE_LAUNCH_AGENTS && sp.numberOfAgent>0 ){
                         startAgentSmiths(sp.numberOfAgent,sp.interval, sp.serverAddress, sp.serverPort );
-                    }else if (Message_Performative.equals("REQUEST") && sp.type==2){
+                    }else if (Message_Performative.equals("REQUEST") && sp.type==AgentCoordinator.MESSAGE_KILL_AGENTS){
                         killAgents();
+                    }else if (Message_Performative.equals("REQUEST") && sp.type==AgentCoordinator.GET_NUMBER_OF_AGENTS){
+                        //send back the number of running agents
+                        ACLMessage response = new ACLMessage(ACLMessage.INFORM);
+                        response.addReceiver(coordinatorAID);
+                        response.setLanguage("English");
+                        try {
+                            SmithParameter sp = new SmithParameter();
+                            sp.type=AgentCoordinator.GET_NUMBER_OF_AGENTS;
+                            sp.numberOfRunningAgents = numberOfAgents;
+                            response.setContentObject(sp);
+                        } catch (IOException ex) {
+                            Logger.getLogger(AgentSubCoordinator.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        send(response);
+                        
                     }
                 }
             } catch (UnreadableException ex) {
                 Logger.getLogger(AgentSubCoordinator.class.getName()).log(Level.SEVERE, null, ex);
             }
             }
+            
+            
             System.out.println(" ****I Received a Message***" +"\n"+
                     "The Sender Name is::>"+ SenderName+"\n"+
                     "The Content of the Message is::> " + sp.toString() + "\n"+
                     "::: And Performative is::> " + Message_Performative + "\n");
             System.out.println("ooooooooooooooooooooooooooooooooooooooo");
-
-            
+           
+           
 
         }
 
@@ -244,7 +271,8 @@ public class AgentSubCoordinator extends Agent {
         }
     }
     
-
+    
+    /*
     public void killAContainer(ContainerID cid) throws Codec.CodecException, OntologyException {
         //creating the request
         ACLMessage request = new ACLMessage(ACLMessage.REQUEST);
@@ -262,6 +290,7 @@ public class AgentSubCoordinator extends Agent {
         send(request);
 
     }
+    */
     
     private void killAgents(){
         try {
@@ -278,5 +307,7 @@ public class AgentSubCoordinator extends Agent {
             Logger.getLogger(AgentSubCoordinator.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    
 
 }

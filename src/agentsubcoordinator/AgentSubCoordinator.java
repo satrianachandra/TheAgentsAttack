@@ -43,7 +43,7 @@ public class AgentSubCoordinator extends Agent {
     private List<jade.wrapper.AgentContainer> mainContainersList;
     private List<AgentController> agentsList;
     private int platformNumber=0;
-    private int numberOfAgents = 0;
+    private int numberOfRunningAgents = 0;
     public static jade.wrapper.ContainerController agentContainer;
     private AID coordinatorAID;
     
@@ -105,11 +105,11 @@ public class AgentSubCoordinator extends Agent {
                 smithArgs[0] = interval;
                 smithArgs[1] = serverAddress;
                 smithArgs[2] = serverPort;
-                smithArgs[3] = getAID(); //the coordinator's aid
+                smithArgs[3] = getAID(); //the subcoordinator's aid
                 agentSmith = agentContainer.createNewAgent("Platform-"+platformNumber+"_Smith-"+j,
                         "agentsmith.AgentSmith", smithArgs);
                 agentSmith.start();
-                numberOfAgents++;
+                numberOfRunningAgents++;
                 agentsList.add(agentSmith);
             } catch (StaleProxyException ex) {
                 Logger.getLogger(AgentSubCoordinator.class.getName()).log(Level.SEVERE, null, ex);
@@ -207,7 +207,7 @@ public class AgentSubCoordinator extends Agent {
                         try {
                             SmithParameter sp = new SmithParameter();
                             sp.type=AgentCoordinator.GET_NUMBER_OF_AGENTS;
-                            sp.numberOfRunningAgents = numberOfAgents;
+                            sp.numberOfRunningAgents = numberOfRunningAgents;
                             response.setContentObject(sp);
                         } catch (IOException ex) {
                             Logger.getLogger(AgentSubCoordinator.class.getName()).log(Level.SEVERE, null, ex);

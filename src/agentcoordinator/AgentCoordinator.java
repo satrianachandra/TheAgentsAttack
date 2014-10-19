@@ -211,11 +211,11 @@ public class AgentCoordinator extends GuiAgent {
         
         AID remoteSubCoordinator = new AID("SC@172.30.1.158:1099/JADE", AID.ISGUID);
         remoteSubCoordinator.addAddresses("http://ip-172-30-1-158.eu-west-1.compute.internal:7778/acc");
-        listRemoteSubCoordinators.add(new AgentSubCoordinatorData("172.30.1.158", remoteSubCoordinator));
+        //listRemoteSubCoordinators.add(new AgentSubCoordinatorData("172.30.1.158", remoteSubCoordinator));
         
         remoteSubCoordinator = new AID("SC@172.30.1.232:1099/JADE", AID.ISGUID);
         remoteSubCoordinator.addAddresses("http://ip-172-30-1-232.eu-west-1.compute.internal:7778/acc");
-        listRemoteSubCoordinators.add(new AgentSubCoordinatorData("172.30.1.232", remoteSubCoordinator));
+        //listRemoteSubCoordinators.add(new AgentSubCoordinatorData("172.30.1.232", remoteSubCoordinator));
         
         System.out.print("list size: "+listRemoteSubCoordinators.size());
         //start the agents in the remotes
@@ -266,8 +266,9 @@ public class AgentCoordinator extends GuiAgent {
         //dividing the agents across machines
         int agentsPerMachine = sp.numberOfAgent/(listRemoteSubCoordinators.size()+1);
         System.out.println("number of agents: "+agentsPerMachine);
-        sp.numberOfAgent = agentsPerMachine;
         
+        sp.numberOfAgent = agentsPerMachine;
+        System.out.println(sp.numberOfAgent);
         ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
         
         //for local SC agent

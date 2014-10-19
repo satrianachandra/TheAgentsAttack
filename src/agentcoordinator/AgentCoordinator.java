@@ -165,6 +165,7 @@ public class AgentCoordinator extends GuiAgent {
         rt.setCloseVM(true);
         System.out.print("runtime created\n");
         
+        /*
         //start main container
         ProfileImpl mProfile = new ProfileImpl(null,1099,null);
         jade.wrapper.AgentContainer mainContainer = rt.createMainContainer(mProfile);
@@ -177,6 +178,7 @@ public class AgentCoordinator extends GuiAgent {
         } catch (StaleProxyException ex) {
             Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
         }
+        */
         
         //creating container for other agents
         ProfileImpl pContainer = new ProfileImpl();//null, startingPort+i,null);

@@ -45,6 +45,7 @@ public class AgentSubCoordinator extends Agent {
     private int platformNumber=0;
     private int numberOfRunningAgents = 0;
     public static jade.wrapper.ContainerController agentContainer;
+    private jade.wrapper.ContainerController agentSmithContainer;
     private AID coordinatorAID;
     
     @Override
@@ -97,7 +98,7 @@ public class AgentSubCoordinator extends Agent {
         //mainContainersList.add(mainContainer);
 
         ProfileImpl pContainer = new ProfileImpl();//null, startingPort+i,null);
-        jade.wrapper.ContainerController agentSmithContainer = rt.createAgentContainer(pContainer);
+        agentSmithContainer = rt.createAgentContainer(pContainer);
         System.out.println("containers created "+pContainer);
         for (int j=0;j<numberOfAgents;j++){
             try {
@@ -310,7 +311,8 @@ public class AgentSubCoordinator extends Agent {
                     } catch (OntologyException ex) {
                     Logger.getLogger(AgentSubCoordinator.class.getName()).log(Level.SEVERE, null, ex);
                     }*/
-                    agentContainer.kill();
+                    agentSmithContainer.kill();
+                    AgentSubCoordinator.agentContainer.kill();
                 } catch (StaleProxyException ex) {
                     Logger.getLogger(AgentSubCoordinator.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -319,5 +321,9 @@ public class AgentSubCoordinator extends Agent {
     }
     
     
-
+    @Override
+    protected void takeDown(){
+        killAgents();
+    }
+    
 }

@@ -211,11 +211,11 @@ public class AgentCoordinator extends GuiAgent {
         
         AID remoteSubCoordinator = new AID("SC@172.30.1.158:1099/JADE", AID.ISGUID);
         remoteSubCoordinator.addAddresses("http://ip-172-30-1-158.eu-west-1.compute.internal:7778/acc");
-        //listRemoteSubCoordinators.add(new AgentSubCoordinatorData("172.30.1.158", remoteSubCoordinator));
+        listRemoteSubCoordinators.add(new AgentSubCoordinatorData("172.30.1.158", remoteSubCoordinator));
         
         remoteSubCoordinator = new AID("SC@172.30.1.232:1099/JADE", AID.ISGUID);
         remoteSubCoordinator.addAddresses("http://ip-172-30-1-232.eu-west-1.compute.internal:7778/acc");
-        //listRemoteSubCoordinators.add(new AgentSubCoordinatorData("172.30.1.232", remoteSubCoordinator));
+        listRemoteSubCoordinators.add(new AgentSubCoordinatorData("172.30.1.232", remoteSubCoordinator));
         
         System.out.print("list size: "+listRemoteSubCoordinators.size());
         //start the agents in the remotes

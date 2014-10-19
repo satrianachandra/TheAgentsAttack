@@ -97,7 +97,7 @@ public class AgentSubCoordinator extends Agent {
         //mainContainersList.add(mainContainer);
 
         ProfileImpl pContainer = new ProfileImpl();//null, startingPort+i,null);
-        agentContainer = rt.createAgentContainer(pContainer);
+        jade.wrapper.ContainerController agentSmithContainer = rt.createAgentContainer(pContainer);
         System.out.println("containers created "+pContainer);
         for (int j=0;j<numberOfAgents;j++){
             try {
@@ -106,7 +106,7 @@ public class AgentSubCoordinator extends Agent {
                 smithArgs[1] = serverAddress;
                 smithArgs[2] = serverPort;
                 smithArgs[3] = getAID(); //the subcoordinator's aid
-                agentSmith = agentContainer.createNewAgent("Platform-"+platformNumber+"_Smith-"+j,
+                agentSmith = agentSmithContainer.createNewAgent("Platform-"+platformNumber+"_Smith-"+j,
                         "agentsmith.AgentSmith", smithArgs);
                 agentSmith.start();
                 numberOfRunningAgents++;
@@ -262,13 +262,13 @@ public class AgentSubCoordinator extends Agent {
 
         
         ProfileImpl pContainer = new ProfileImpl();//null, startingPort+i,null);
-        agentContainer = rt.createAgentContainer(pContainer);        
+        AgentSubCoordinator.agentContainer = rt.createAgentContainer(pContainer);        
         
         //Start the local Agent SubCoordinator
         AgentController agentSubCoodinator;
         Object[] subCoordArgs = new Object[1];
         try {
-            agentSubCoodinator = agentContainer.createNewAgent("SC",
+            agentSubCoodinator = AgentSubCoordinator.agentContainer.createNewAgent("SC",
                     "agentsubcoordinator.AgentSubCoordinator", subCoordArgs);
             agentSubCoodinator.start();
         } catch (StaleProxyException ex) {

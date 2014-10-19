@@ -91,29 +91,7 @@ public class AgentCoordinator extends GuiAgent {
     protected void onGuiEvent(GuiEvent ge) {
         int type = ge.getType();
         if (type == MESSAGE_LAUNCH_AGENTS){
-            SmithParameter sp = (SmithParameter)ge.getParameter(0);
-            //send message to the subcoordinator to launch agent
-            ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
-            msg.addReceiver(new AID("SC", AID.ISLOCALNAME));
-            msg.setLanguage("English");
-            try {
-                msg.setContentObject(sp);
-            } catch (IOException ex) {
-                Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            //msg.setContent("launch agents");
-            send(msg);
-            
-            msg.addReceiver(listRemoteSubCoordinators.get(0).getAID());
-            System.out.println("List of receivers: "+msg.getAllIntendedReceiver().toString());
-            sp.numberOfAgent=0; //set the number of agents depending on the requirement
-            try {
-                msg.setContentObject(sp);
-            } catch (IOException ex) {
-                Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            send(msg);
-            
+            launchAllAgents((SmithParameter)ge.getParameter(0));
         }else if (type == MESSAGE_KILL_AGENTS){
             killAllAgentSmith();
         }else if (type == GET_NUMBER_OF_AGENTS){
@@ -129,7 +107,6 @@ public class AgentCoordinator extends GuiAgent {
             super();
             this.msg = msg;
         }
-        
         @Override
         public void action() {
             send(msg);
@@ -142,8 +119,6 @@ public class AgentCoordinator extends GuiAgent {
         }
     }
 
-
-    
     public class ReceiveMessage extends CyclicBehaviour {
    // Variable to Hold the content of the received Message
         private String Message_Performative;
@@ -168,15 +143,14 @@ public class AgentCoordinator extends GuiAgent {
                     try {
                         sp = (SmithParameter)msg.getContentObject();
                         if (Message_Performative.equals("INFORM")&& sp.type==GET_NUMBER_OF_AGENTS){
-                        numberOfRunningAgents+=sp.numberOfRunningAgents;
-                        agentUI.updateNumberOfAgents(numberOfRunningAgents);
+                            numberOfRunningAgents+=sp.numberOfRunningAgents;
+                            agentUI.updateNumberOfAgents(numberOfRunningAgents);
                         }
                     } catch (UnreadableException ex) {
                         Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
                 
-
             }
 
         } 
@@ -233,57 +207,44 @@ public class AgentCoordinator extends GuiAgent {
         
         //Add remote machines
         listRemoteSubCoordinators = new ArrayList<>();
+        
         AID remoteSubCoordinator = new AID("SC@172.30.1.158:1099/JADE", AID.ISGUID);
         remoteSubCoordinator.addAddresses("http://ip-172-30-1-158.eu-west-1.compute.internal:7778/acc");
         listRemoteSubCoordinators.add(new AgentSubCoordinatorData("172.30.1.158", remoteSubCoordinator));
         
+        remoteSubCoordinator = new AID("SC@172.30.1.232:1099/JADE", AID.ISGUID);
+        remoteSubCoordinator.addAddresses("http://ip-172-30-1-232.eu-west-1.compute.internal:7778/acc");
         //Start the JADE platform and Agent Subcoordinator in the remote machines
-        String hostname = listRemoteSubCoordinators.get(0).getMachineIP();
-        /*
-        String setClasspath = "export CLASSPATH=/home/ubuntu/JADE-COURSE-2014/jade/lib/commons-codec/commons-codec-1.3.jar:$CLASSPATH;"
-                + " export CLASSPATH=/home/ubuntu/JADE-COURSE-2014/jade/lib/jadeExamples.jar:$CLASSPATH;"
-                + " export CLASSPATH=/home/ubuntu/JADE-COURSE-2014/jade/lib/jade.jar:$CLASSPATH;";
-        */
-        String setClasspath = "export CLASSPATH=:$CLASSPATH;";
-        String createPlatformAndAgents= " cd /home/ubuntu/Codes/TheAgentsAttack/src&&java agentsubcoordinator.AgentSubCoordinator;";
-        Terminal.execute("ssh -X -o StrictHostKeyChecking=no -i /home/ubuntu/aws_key_chasat.pem "+hostname+" "+"\""+setClasspath+createPlatformAndAgents+"\"");
+        
+        
+        //start the agents in the remotes
+        for(int i=0;i<listRemoteSubCoordinators.size();i++){
+            String hostname = listRemoteSubCoordinators.get(i).getMachineIP();
+            String setClasspath = "export CLASSPATH=:$CLASSPATH;";
+            String createPlatformAndAgents= " cd /home/ubuntu/Codes/TheAgentsAttack/src&&java agentsubcoordinator.AgentSubCoordinator;";
+            Terminal.execute("ssh -X -o StrictHostKeyChecking=no -i /home/ubuntu/aws_key_chasat.pem "+hostname+" "+"\""+setClasspath+createPlatformAndAgents+"\"");
+        }
            
     }
     
     private void killAllAgentSmith(){
         //send a kill message to the AgentSubCoordinator  
-        
-        //the local
-        ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
-        msg.addReceiver(new AID("SC", AID.ISLOCALNAME));
-        msg.setLanguage("English");
-        try {
-            SmithParameter sp = new SmithParameter();
-            sp.type=MESSAGE_KILL_AGENTS; //KILL
-            msg.setContentObject(sp);
-        } catch (IOException ex) {
-            Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        //msg.setContent("launch agents");
-        send(msg);
-        
-        
-        //the remotes
-        msg.addReceiver(listRemoteSubCoordinators.get(0).getAID());
-        send(msg);
+        sendMessageToSmith(MESSAGE_KILL_AGENTS);
     }
         
     private void getNumberOfAgents(){
         numberOfRunningAgents=0;
-        //send message to Agent Subcoordinator
-        
+        sendMessageToSmith(GET_NUMBER_OF_AGENTS);
+    }
+    
+    private void sendMessageToSmith(int spType){
         //the local
         ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
         msg.addReceiver(new AID("SC", AID.ISLOCALNAME));
         msg.setLanguage("English");
         try {
             SmithParameter sp = new SmithParameter();
-            sp.type=GET_NUMBER_OF_AGENTS; //get number of smiths running
+            sp.type=spType; //get number of smiths running
             msg.setContentObject(sp);
         } catch (IOException ex) {
             Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
@@ -291,10 +252,38 @@ public class AgentCoordinator extends GuiAgent {
         //msg.setContent("launch agents");
         send(msg);
         
-        
         //the remotes
-        msg.addReceiver(listRemoteSubCoordinators.get(0).getAID());
-        send(msg);
+        for (int i=0;i<listRemoteSubCoordinators.size();i++){
+            msg.addReceiver(listRemoteSubCoordinators.get(i).getAID());
+            send(msg);
+        }
     }
-    
+
+    private void launchAllAgents(SmithParameter sp){
+        //send message to the subcoordinator to launch agent
+        
+        //dividing the agents across machines
+        int agentsPerMachine = sp.numberOfAgent/(listRemoteSubCoordinators.size()+1);
+        sp.numberOfAgent = agentsPerMachine;
+        
+        ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+        
+        //for local SC agent
+        msg.addReceiver(new AID("SC", AID.ISLOCALNAME));
+        msg.setLanguage("English");
+        try {
+            msg.setContentObject(sp);
+        } catch (IOException ex) {
+            Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        send(msg);
+
+        //for remote SC agents
+        for (int i=0;i<listRemoteSubCoordinators.size();i++){
+            msg.addReceiver(listRemoteSubCoordinators.get(i).getAID());
+            System.out.println("List of receivers: "+msg.getAllIntendedReceiver().toString());
+            send(msg);
+        }   
+    }
 }
+

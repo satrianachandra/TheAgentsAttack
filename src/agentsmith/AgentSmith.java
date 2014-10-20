@@ -95,12 +95,12 @@ public class AgentSmith extends Agent {
             
             protected void onTick() {
                 try{
-                if ((tcpClientSocket == null)||tcpClientSocket.isClosed()){
-                    tcpClientSocket = new Socket(serverAddress, serverPort);
-                    out = new PrintWriter(tcpClientSocket.getOutputStream(), true);
-                    in = new BufferedReader(
-                    new InputStreamReader(tcpClientSocket.getInputStream()));
-                }
+                //if ((tcpClientSocket == null)||tcpClientSocket.isClosed()){
+                tcpClientSocket = new Socket(serverAddress, serverPort);
+                out = new PrintWriter(tcpClientSocket.getOutputStream(), true);
+                in = new BufferedReader(
+                new InputStreamReader(tcpClientSocket.getInputStream()));
+                //}
                 //out = new PrintWriter(tcpClientSocket.getOutputStream(), true);
                 //in = new BufferedReader(new InputStreamReader(tcpClientSocket.getInputStream()));
                 out.println("100#"+getAID().getName());
@@ -109,6 +109,9 @@ public class AgentSmith extends Agent {
                 result = in.readLine();                //out.close();
 
                 System.out.println("AID:"+getAID().getName()+"result "+result);
+                in.close();
+                out.close();
+                tcpClientSocket.close();    
                 //inform the Coordinator
                 //informCoordinator("fibo result: "+result);
                 //in.close();
@@ -125,6 +128,8 @@ public class AgentSmith extends Agent {
                     Logger.getLogger(AgentSmith.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 
+                
+                
             }
         } );
         
@@ -133,6 +138,7 @@ public class AgentSmith extends Agent {
     
     @Override
     protected void takeDown(){
+        /*
         try {
             if (in !=null){
                 in.close();
@@ -142,7 +148,7 @@ public class AgentSmith extends Agent {
         } catch (IOException ex) {
             Logger.getLogger(AgentSmith.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+        */
     }
     
     /*

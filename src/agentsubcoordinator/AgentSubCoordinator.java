@@ -198,7 +198,6 @@ public class AgentSubCoordinator extends Agent {
                     if (Message_Performative.equals("REQUEST") && sp.type==AgentCoordinator.MESSAGE_LAUNCH_AGENTS && sp.numberOfAgent>0 ){
                         startAgentSmiths(sp.numberOfAgent,sp.interval, sp.serverAddress, sp.serverPort );
                     }else if (Message_Performative.equals("REQUEST") && sp.type==AgentCoordinator.MESSAGE_KILL_AGENTS){
-                        System.out.println("number agents in local sc :"+sp.numberOfAgent);
                         killAgents();
                     }else if (Message_Performative.equals("REQUEST") && sp.type==AgentCoordinator.GET_NUMBER_OF_AGENTS){
                         //send back the number of running agents

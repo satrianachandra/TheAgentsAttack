@@ -50,6 +50,7 @@ public class AgentCoordinator extends GuiAgent {
     private AgentCoordinatorUI agentUI;
     public static List<AgentSubCoordinatorData>listRemoteSubCoordinators;
     private int numberOfRunningAgents=0;
+    public static List<Process>sshProcessess;
     
     protected void setup() {
         /** Registration with the DF */
@@ -221,11 +222,13 @@ public class AgentCoordinator extends GuiAgent {
         
         System.out.print("list size: "+listRemoteSubCoordinators.size());
         //start the agents in the remotes
+        sshProcessess = new ArrayList<>();
         for(int i=0;i<listRemoteSubCoordinators.size();i++){
             String hostname = listRemoteSubCoordinators.get(i).getMachineIP();
             String setClasspath = "export CLASSPATH=:$CLASSPATH;";
             String createPlatformAndAgents= " cd /home/ubuntu/Codes/TheAgentsAttack/src&&java agentsubcoordinator.AgentSubCoordinator;";
-            Terminal.executeNoError("ssh -X -o StrictHostKeyChecking=no -i /home/ubuntu/aws_key_chasat.pem "+hostname+" "+"\""+setClasspath+createPlatformAndAgents+"\"");
+            Process pr = Terminal.executeNoError("ssh -X -o StrictHostKeyChecking=no -i /home/ubuntu/aws_key_chasat.pem "+hostname+" "+"\""+setClasspath+createPlatformAndAgents+"\"");
+            sshProcessess.add(pr);
         }
            
     }
@@ -247,7 +250,7 @@ public class AgentCoordinator extends GuiAgent {
         msg.setLanguage("English");
         try {
             SmithParameter sp = new SmithParameter();
-            sp.type=spType; //get number of smiths running
+            sp.type=spType; 
             msg.setContentObject(sp);
         } catch (IOException ex) {
             Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
@@ -257,9 +260,22 @@ public class AgentCoordinator extends GuiAgent {
         
         //the remotes
         for (int i=0;i<listRemoteSubCoordinators.size();i++){
-            msg.addReceiver(listRemoteSubCoordinators.get(i).getAID());
-            send(msg);
+            SmithParameter sp = new SmithParameter();
+            sp.type=spType; 
+            ACLMessage msg2 = new ACLMessage(ACLMessage.REQUEST);
+            msg2.setLanguage("English");
+            try {
+                msg2.setContentObject(sp);
+            } catch (IOException ex) {
+                Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            msg2.addReceiver(listRemoteSubCoordinators.get(i).getAID());
+            System.out.println("List of receivers: "+msg.getAllIntendedReceiver().toString());
+            send(msg2);
+            
         }
+        
+        
     }
 
     private void launchAllAgents(SmithParameter sp){
@@ -285,10 +301,25 @@ public class AgentCoordinator extends GuiAgent {
 
         //for remote SC agents
         for (int i=0;i<listRemoteSubCoordinators.size();i++){
-            msg.addReceiver(listRemoteSubCoordinators.get(i).getAID());
+            ACLMessage msg2 = new ACLMessage(ACLMessage.REQUEST);
+            msg2.setLanguage("English");
+            try {
+                msg2.setContentObject(sp);
+            } catch (IOException ex) {
+                Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            msg2.addReceiver(listRemoteSubCoordinators.get(i).getAID());
             System.out.println("List of receivers: "+msg.getAllIntendedReceiver().toString());
-            send(msg);
+            send(msg2);
         }   
+    }
+
+    
+    @Override
+    protected void takeDown(){
+        for (int i=0;i<sshProcessess.size();i++){
+            sshProcessess.get(i).destroy();
+        }
     }
 }
 

@@ -7,6 +7,8 @@ package agentcoordinator;
 
 import jade.gui.GuiEvent;
 import jade.wrapper.StaleProxyException;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import messageclasses.SmithParameter;
@@ -24,6 +26,7 @@ public class AgentCoordinatorUI extends javax.swing.JFrame {
      */
     public AgentCoordinatorUI() {
         initComponents();
+        addWindowListener(new WindowEventHandler());
         setVisible(true);
         buttonKillAllAgents.setEnabled(false);
     }
@@ -333,4 +336,11 @@ public class AgentCoordinatorUI extends javax.swing.JFrame {
     public void updateNumberOfAgents(int numberOfAgents){
         labelNumberOfAgents.setText(String.valueOf(numberOfAgents));
     }
+    
+    class WindowEventHandler extends WindowAdapter {
+        public void windowClosing(WindowEvent evt) {
+            //myAgent.cleanUpStuffs();
+        }
+    }   
 }
+

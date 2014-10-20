@@ -97,24 +97,22 @@ public class AgentSmith extends Agent {
                 try{
                 //if ((tcpClientSocket == null)||tcpClientSocket.isClosed()){
                 tcpClientSocket = new Socket(serverAddress, serverPort);
-                out = new PrintWriter(tcpClientSocket.getOutputStream(), true);
-                in = new BufferedReader(
-                new InputStreamReader(tcpClientSocket.getInputStream()));
+                    //out = new PrintWriter(tcpClientSocket.getOutputStream(), true);
+                    //in = new BufferedReader(
+                    //new InputStreamReader(tcpClientSocket.getInputStream()));
                 //}
                 //out = new PrintWriter(tcpClientSocket.getOutputStream(), true);
                 //in = new BufferedReader(new InputStreamReader(tcpClientSocket.getInputStream()));
-                out.println("100#"+getAID().getName());
+                //out.println("100#"+getAID().getName());
                 
                 String result="";
-                result = in.readLine();                //out.close();
+                //result = in.readLine();                //out.close();
 
                 System.out.println("AID:"+getAID().getName()+"result "+result);
-                in.close();
-                out.close();
-                tcpClientSocket.close();    
                 //inform the Coordinator
                 //informCoordinator("fibo result: "+result);
                 //in.close();
+                tcpClientSocket.close();    
                 }catch(UnknownHostException e){
                     System.err.println("Don't know about host " + serverAddress);
                     //System.exit(1);
@@ -127,8 +125,6 @@ public class AgentSmith extends Agent {
                 }catch(Exception ex){
                     Logger.getLogger(AgentSmith.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                
-                
                 
             }
         } );

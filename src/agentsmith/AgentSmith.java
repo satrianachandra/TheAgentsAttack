@@ -107,7 +107,7 @@ public class AgentSmith extends Agent {
                 
                 String result="";
                 result = in.readLine();
-                System.out.println("result "+result);
+                System.out.println("AID:"+getAID().getName()+"result "+result);
                 //inform the Coordinator
                 //informCoordinator("fibo result: "+result);
                 //in.close();

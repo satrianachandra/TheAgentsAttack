@@ -311,7 +311,7 @@ public class AgentSubCoordinator extends Agent {
                     Logger.getLogger(AgentSubCoordinator.class.getName()).log(Level.SEVERE, null, ex);
                     }*/
                     agentSmithContainer.kill();
-                    AgentSubCoordinator.agentContainer.kill();
+                    //AgentSubCoordinator.agentContainer.kill();
                 } catch (StaleProxyException ex) {
                     Logger.getLogger(AgentSubCoordinator.class.getName()).log(Level.SEVERE, null, ex);
                 }

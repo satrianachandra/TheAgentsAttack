@@ -103,7 +103,7 @@ public class AgentSmith extends Agent {
                 }
                 //out = new PrintWriter(tcpClientSocket.getOutputStream(), true);
                 //in = new BufferedReader(new InputStreamReader(tcpClientSocket.getInputStream()));
-                out.println("100");
+                out.println("100#"+getAID().getName());
                 
                 String result="";
                 result = in.readLine();

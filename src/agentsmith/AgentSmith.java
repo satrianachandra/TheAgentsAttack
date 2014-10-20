@@ -106,12 +106,12 @@ public class AgentSmith extends Agent {
                 out.println("100#"+getAID().getName());
                 
                 String result="";
-                result = in.readLine();
+                result = in.readLine();                //out.close();
+
                 System.out.println("AID:"+getAID().getName()+"result "+result);
                 //inform the Coordinator
                 //informCoordinator("fibo result: "+result);
                 //in.close();
-                //out.close();
                 }catch(UnknownHostException e){
                     System.err.println("Don't know about host " + serverAddress);
                     //System.exit(1);

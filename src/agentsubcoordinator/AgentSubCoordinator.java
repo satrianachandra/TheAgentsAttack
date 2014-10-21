@@ -99,26 +99,33 @@ public class AgentSubCoordinator extends Agent {
         //jade.wrapper.AgentContainer mainContainer = rt.createMainContainer(mProfile);
         //System.out.println("main container created "+mainContainer);
         //mainContainersList.add(mainContainer);
-        AgentController agentSmith;
-        ProfileImpl pContainer = new ProfileImpl();//null, startingPort+i,null);
-        agentSmithContainer = rt.createAgentContainer(pContainer);
-        System.out.println("containers created "+pContainer);
-        for (int j=0;j<numberOfAgents;j++){
-            try {
-                Object[] smithArgs = new Object[3];
-                smithArgs[0] = interval;
-                smithArgs[1] = serverAddress;
-                smithArgs[2] = serverPort;
-                //smithArgs[3] = getAID(); //the subcoordinator's aid
-                agentSmith = agentSmithContainer.createNewAgent("Platform-"+platformNumber+"_Smith-"+j,
-                        "agentsmith.AgentSmith", smithArgs);
-                agentSmith.start();
-                numberOfRunningAgents++;
-               // agentsList.add(agentSmith);
-            } catch (StaleProxyException ex) {
-                Logger.getLogger(AgentSubCoordinator.class.getName()).log(Level.SEVERE, null, ex);
+        int numberOfAgentsPerContainer = 1000;
+        int numberOfContainer = numberOfAgents/numberOfAgentsPerContainer;
+        int contNumber= 0;
+        for (int k=0;k<numberOfContainer;k++){
+            AgentController agentSmith;
+            ProfileImpl pContainer = new ProfileImpl();//null, startingPort+i,null);
+            agentSmithContainer = rt.createAgentContainer(pContainer);
+            contNumber++;
+            System.out.println("containers"+contNumber+" created "+pContainer);
+            for (int j=0;j<numberOfAgentsPerContainer;j++){
+                try {
+                    Object[] smithArgs = new Object[3];
+                    smithArgs[0] = interval;
+                    smithArgs[1] = serverAddress;
+                    smithArgs[2] = serverPort;
+                    //smithArgs[3] = getAID(); //the subcoordinator's aid
+                    agentSmith = agentSmithContainer.createNewAgent("Platform-"+platformNumber+"_Smith-"+j,
+                            "agentsmith.AgentSmith", smithArgs);
+                    agentSmith.start();
+                    numberOfRunningAgents++;
+                   // agentsList.add(agentSmith);
+                } catch (StaleProxyException ex) {
+                    Logger.getLogger(AgentSubCoordinator.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }
+        
         
     }
     

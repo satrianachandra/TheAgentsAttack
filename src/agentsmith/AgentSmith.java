@@ -31,23 +31,23 @@ public class AgentSmith extends Agent {
     
     private String serverAddress;
     private int serverPort;
-    private AgentSmith theAgent;
+    //private AgentSmith theAgent;
     private AID coordinatorAID;
     
-    private Socket tcpClientSocket;
+    //private Socket tcpClientSocket;
     private PrintWriter out ;
     private BufferedReader in ;
             
     @Override
     protected void setup() {
-        theAgent = this;
+        //theAgent = this;
         
         Object[] args = getArguments();
         if (args != null){
             interval = (long) args[0];
             serverAddress = (String)args[1];
             serverPort = (int)args[2];
-            coordinatorAID = (AID)args[3];
+            //coordinatorAID = (AID)args[3];
             /*
             interval = Long.decode(args[0].toString());
             serverAddress = args[1].toString();
@@ -75,7 +75,6 @@ public class AgentSmith extends Agent {
         //doDelete();
         }
         */
-        
         addBehaviour(new TickerBehaviour(this, interval) {
             
             /*
@@ -96,7 +95,7 @@ public class AgentSmith extends Agent {
             protected void onTick() {
                 try{
                 //if ((tcpClientSocket == null)||tcpClientSocket.isClosed()){
-                tcpClientSocket = new Socket(serverAddress, serverPort);
+                Socket tcpClientSocket = new Socket(serverAddress, serverPort);
                     //out = new PrintWriter(tcpClientSocket.getOutputStream(), true);
                     //in = new BufferedReader(
                     //new InputStreamReader(tcpClientSocket.getInputStream()));
@@ -105,16 +104,16 @@ public class AgentSmith extends Agent {
                 //in = new BufferedReader(new InputStreamReader(tcpClientSocket.getInputStream()));
                 //out.println("100#"+getAID().getName());
                 
-                String result="";
+                //String result="";
                 //result = in.readLine();                //out.close();
 
-                System.out.println("AID:"+getAID().getName()+"result "+result);
+                //System.out.println("AID:"+getAID().getName()+"result "+result);
                 //inform the Coordinator
                 //informCoordinator("fibo result: "+result);
                 //in.close();
                 tcpClientSocket.close();    
                 }catch(UnknownHostException e){
-                    System.err.println("Don't know about host " + serverAddress);
+                    //System.err.println("Don't know about host " + serverAddress);
                     //System.exit(1);
                 } catch (IOException ex) {
                     Logger.getLogger(AgentSmith.class.getName()).log(Level.SEVERE, null, ex);

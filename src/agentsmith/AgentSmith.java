@@ -57,41 +57,7 @@ public class AgentSmith extends Agent {
             */
         }
         
-        /*
-        //registration to the DF, so we can search the agents later, need to check if necessary
-        DFAgentDescription dfd = new DFAgentDescription();
-        ServiceDescription sd = new ServiceDescription();
-        sd.setType("AgentSmith");
-        sd.setName(getName());
-        sd.setOwnership("JADE");
-        sd.addOntologies("JADEAgent");
-        dfd.setName(getAID());
-
-        dfd.addServices(sd);
-        try {
-            DFService.register(this,dfd);
-        } catch (FIPAException e) {
-            System.err.println(getLocalName()+" registration with DF unsucceeded. Reason: "+e.getMessage());
-        //doDelete();
-        }
-        */
         addBehaviour(new TickerBehaviour(this, interval) {
-            
-            /*
-            private void informCoordinator(String content){
-                //send confirmation to the agent coordinator
-                ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-                // msg.addReceiver(new AID(receiver, AID.ISLOCALNAME)); //here the name of the agent is already known
-                msg.addReceiver(coordinatorAID);
-                msg.setLanguage("English");
-                msg.setContent(content);
-                
-                //SendMessage smithSM = new SendMessage(msg);
-                //theAgent.addBehaviour(smithSM);
-                
-            }
-            */
-            
             protected void onTick() {
                 try{
                 //if ((tcpClientSocket == null)||tcpClientSocket.isClosed()){
@@ -107,7 +73,7 @@ public class AgentSmith extends Agent {
                 //String result="";
                 //result = in.readLine();                //out.close();
 
-                //System.out.println("AID:"+getAID().getName()+"result "+result);
+                System.out.println("AID:"+getAID().getName());
                 //inform the Coordinator
                 //informCoordinator("fibo result: "+result);
                 //in.close();

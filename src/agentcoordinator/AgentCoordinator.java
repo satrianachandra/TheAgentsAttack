@@ -43,12 +43,14 @@ public class AgentCoordinator extends GuiAgent {
     public static final int MESSAGE_LAUNCH_AGENTS = 3;
     public static final int MESSAGE_KILL_AGENTS = 4;
     public static final int GET_NUMBER_OF_AGENTS = 5;
+    public static final int I_AM_UP = 6;
     
     public static final String SEMICOLON = ";";
     //an example of adding 1 remote platforms
     public AID remoteDF;
     private AgentCoordinatorUI agentUI;
-    public static List<AgentSubCoordinatorData>listRemoteSubCoordinators;
+    //public static List<AgentSubCoordinatorData>listRemoteSubCoordinators;
+    public static List<AID>listRemoteSubCoordinators;
     private int numberOfRunningAgents=0;
     public static List<Process>sshProcessess;
     
@@ -125,18 +127,18 @@ public class AgentCoordinator extends GuiAgent {
    // Variable to Hold the content of the received Message
         private String Message_Performative;
         private String Message_Content;
-        private String SenderName;
+        private AID sender;
         private String MyPlan;
 
         public void action() {
             ACLMessage msg = receive();
             if(msg != null) {
                 Message_Performative = msg.getPerformative(msg.getPerformative());
-                Message_Content = msg.getContent();
-                SenderName = msg.getSender().getLocalName();
+                //Message_Content = msg.getContent();
+                sender = msg.getSender();
                 System.out.println(" ****I Received a Message***" +"\n"+
-                        "The Sender Name is::>"+ SenderName+"\n"+
-                        "The Content of the Message is::> " + Message_Content + "\n"+
+                        "The Sender Name is::>"+ sender.getLocalName()+"\n"+
+                      //  "The Content of the Message is::> " + Message_Content + "\n"+
                         "::: And Performative is::> " + Message_Performative + "\n");
                 System.out.println("ooooooooooooooooooooooooooooooooooooooo");
                 
@@ -144,9 +146,15 @@ public class AgentCoordinator extends GuiAgent {
                     SmithParameter sp = null;
                     try {
                         sp = (SmithParameter)msg.getContentObject();
+                        System.out.println("type:"+sp.type);
                         if (Message_Performative.equals("INFORM")&& sp.type==GET_NUMBER_OF_AGENTS){
                             numberOfRunningAgents+=sp.numberOfRunningAgents;
                             agentUI.updateNumberOfAgents(numberOfRunningAgents);
+                        }else if(Message_Performative.equals("INFORM")&& sp.type==I_AM_UP){
+                            //listRemoteSubCoordinators.add(sender);
+                            launchRemoteAgents(sender);
+                            //tell the remote subcoordinator to start 1000 machines
+                            
                         }
                     } catch (UnreadableException ex) {
                         Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
@@ -197,6 +205,7 @@ public class AgentCoordinator extends GuiAgent {
             Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
         }
         
+        /*
         //Start the local Agent SubCoordinator
         AgentController agentSubCoodinator;
         Object[] subCoordArgs = new Object[1];
@@ -207,7 +216,7 @@ public class AgentCoordinator extends GuiAgent {
         } catch (StaleProxyException ex) {
             Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+        */
         
         //Add remote machines
         listRemoteSubCoordinators = new ArrayList<>();
@@ -220,6 +229,7 @@ public class AgentCoordinator extends GuiAgent {
         remoteSubCoordinator.addAddresses("http://ip-172-30-1-232.eu-west-1.compute.internal:7778/acc");
         //listRemoteSubCoordinators.add(new AgentSubCoordinatorData("172.30.1.232", remoteSubCoordinator));
         
+        /*
         System.out.print("list size: "+listRemoteSubCoordinators.size());
         //start the agents in the remotes
         sshProcessess = new ArrayList<>();
@@ -230,6 +240,7 @@ public class AgentCoordinator extends GuiAgent {
             Process pr = Terminal.executeNoError("ssh -X -o StrictHostKeyChecking=no -i /home/ubuntu/aws_key_chasat.pem "+hostname+" "+"\""+setClasspath+createPlatformAndAgents+"\"");
             sshProcessess.add(pr);
         }
+          */
            
     }
     
@@ -269,7 +280,8 @@ public class AgentCoordinator extends GuiAgent {
             } catch (IOException ex) {
                 Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
             }
-            msg2.addReceiver(listRemoteSubCoordinators.get(i).getAID());
+            //msg2.addReceiver(listRemoteSubCoordinators.get(i).getAID());
+            msg2.addReceiver(listRemoteSubCoordinators.get(i));
             System.out.println("List of receivers: "+msg.getAllIntendedReceiver().toString());
             send(msg2);
             
@@ -308,7 +320,8 @@ public class AgentCoordinator extends GuiAgent {
             } catch (IOException ex) {
                 Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
             }
-            msg2.addReceiver(listRemoteSubCoordinators.get(i).getAID());
+            msg2.addReceiver(listRemoteSubCoordinators.get(i));
+            //msg2.addReceiver(listRemoteSubCoordinators.get(i).getAID());
             System.out.println("List of receivers: "+msg.getAllIntendedReceiver().toString());
             send(msg2);
         }   
@@ -321,5 +334,25 @@ public class AgentCoordinator extends GuiAgent {
             sshProcessess.get(i).destroy();
         }
     }
+    
+    private void launchRemoteAgents(AID scAgent){
+        SmithParameter sp = new SmithParameter();
+        sp.type = MESSAGE_LAUNCH_AGENTS;
+        sp.interval = 500;
+        sp.numberOfAgent = 1000;
+        sp.serverAddress = "TeamAsia-LB-841131336.eu-west-1.elb.amazonaws.com";
+        sp.serverPort=8080;
+        System.out.println("inside launch remote");
+        ACLMessage msg2 = new ACLMessage(ACLMessage.REQUEST);
+        msg2.setLanguage("English");
+        try {
+            msg2.setContentObject(sp);
+        } catch (IOException ex) {
+            Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        msg2.addReceiver(scAgent);
+        send(msg2);
+    }
+
 }
 

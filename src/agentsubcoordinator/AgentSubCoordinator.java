@@ -67,8 +67,10 @@ public class AgentSubCoordinator extends Agent {
         //doDelete();
         }
         //hard coding the Coordinator's AID, will be CHANGED, ok!
-        coordinatorAID = new AID("TheCoordinator@172.30.1.217:1099/JADE", AID.ISGUID);
-        coordinatorAID.addAddresses("http://ip-172-30-1-217.eu-west-1.compute.internal:7778/acc");
+        //coordinatorAID = new AID("TheCoordinator@172.30.1.217:1099/JADE", AID.ISGUID);
+        //coordinatorAID.addAddresses("http://ip-172-30-1-217.eu-west-1.compute.internal:7778/acc");
+        coordinatorAID = new AID("TheCoordinator@192.168.0.100:1099/JADE", AID.ISGUID);
+        coordinatorAID.addAddresses("http://sakuragi:7778/acc");
         
         ReceiveMessage rm = new ReceiveMessage();
         addBehaviour(rm);
@@ -99,33 +101,26 @@ public class AgentSubCoordinator extends Agent {
         //jade.wrapper.AgentContainer mainContainer = rt.createMainContainer(mProfile);
         //System.out.println("main container created "+mainContainer);
         //mainContainersList.add(mainContainer);
-        int numberOfAgentsPerContainer = 1000;
-        int numberOfContainer = numberOfAgents/numberOfAgentsPerContainer;
-        int contNumber= 0;
-        for (int k=0;k<numberOfContainer;k++){
-            AgentController agentSmith;
-            ProfileImpl pContainer = new ProfileImpl();//null, startingPort+i,null);
-            agentSmithContainer = rt.createAgentContainer(pContainer);
-            contNumber++;
-            System.out.println("containers"+contNumber+" created "+pContainer);
-            for (int j=0;j<numberOfAgentsPerContainer;j++){
-                try {
-                    Object[] smithArgs = new Object[3];
-                    smithArgs[0] = interval;
-                    smithArgs[1] = serverAddress;
-                    smithArgs[2] = serverPort;
-                    //smithArgs[3] = getAID(); //the subcoordinator's aid
-                    agentSmith = agentSmithContainer.createNewAgent("Platform-"+platformNumber+"_Smith-"+k+"_"+j,
-                            "agentsmith.AgentSmith", smithArgs);
-                    agentSmith.start();
-                    numberOfRunningAgents++;
-                   // agentsList.add(agentSmith);
-                } catch (StaleProxyException ex) {
-                    Logger.getLogger(AgentSubCoordinator.class.getName()).log(Level.SEVERE, null, ex);
-                }
+        AgentController agentSmith;
+        ProfileImpl pContainer = new ProfileImpl();//null, startingPort+i,null);
+        agentSmithContainer = rt.createAgentContainer(pContainer);
+        System.out.println("containers created "+pContainer);
+        for (int j=0;j<numberOfAgents;j++){
+            try {
+                Object[] smithArgs = new Object[3];
+                smithArgs[0] = interval;
+                smithArgs[1] = serverAddress;
+                smithArgs[2] = serverPort;
+                //smithArgs[3] = getAID(); //the subcoordinator's aid
+                agentSmith = agentSmithContainer.createNewAgent("Platform-"+platformNumber+"_Smith-"+j,
+                        "agentsmith.AgentSmith", smithArgs);
+                agentSmith.start();
+                numberOfRunningAgents++;
+               // agentsList.add(agentSmith);
+            } catch (StaleProxyException ex) {
+                Logger.getLogger(AgentSubCoordinator.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        
         
     }
     
@@ -234,7 +229,7 @@ public class AgentSubCoordinator extends Agent {
             
             System.out.println(" ****I Received a Message***" +"\n"+
                     "The Sender Name is::>"+ SenderName+"\n"+
-                    "The Content of the Message is::> " + sp.toString() + "\n"+
+               //     "The Content of the Message is::> " + sp.toString() + "\n"+
                     "::: And Performative is::> " + Message_Performative + "\n");
             System.out.println("ooooooooooooooooooooooooooooooooooooooo");
            
@@ -253,7 +248,6 @@ public class AgentSubCoordinator extends Agent {
         // Exit the JVM when there are no more containers around
         rt.setCloseVM(true);
         System.out.print("runtime created\n");
-        
         
         ProfileImpl mProfile = new ProfileImpl();
         jade.wrapper.AgentContainer mainContainer = rt.createMainContainer(mProfile);       
@@ -310,7 +304,7 @@ public class AgentSubCoordinator extends Agent {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
+               // try {
                     /*
                     try {
                     killAContainer((ContainerID)here());
@@ -319,11 +313,11 @@ public class AgentSubCoordinator extends Agent {
                     } catch (OntologyException ex) {
                     Logger.getLogger(AgentSubCoordinator.class.getName()).log(Level.SEVERE, null, ex);
                     }*/
-                    agentSmithContainer.kill();
+                    //agentSmithContainer.kill();
                     //AgentSubCoordinator.agentContainer.kill();
-                } catch (StaleProxyException ex) {
-                    Logger.getLogger(AgentSubCoordinator.class.getName()).log(Level.SEVERE, null, ex);
-                }
+               // } catch (StaleProxyException ex) {
+                  //  Logger.getLogger(AgentSubCoordinator.class.getName()).log(Level.SEVERE, null, ex);
+               // }
             }
         }).start();
     }
@@ -331,23 +325,27 @@ public class AgentSubCoordinator extends Agent {
     
     @Override
     protected void takeDown(){
-        killAgents();
+        //killAgents();
     }
     
     private void notifyCoordinator(){
         //the local
         ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-        msg.addReceiver(new AID("SC", AID.ISLOCALNAME));
-        msg.setLanguage("English");
+        AID coordinatorAID = new AID("TheCoordinator@192.168.0.100:1099/JADE", AID.ISGUID);
+        coordinatorAID.addAddresses("http://sakuragi:7778/acc");
+        msg.addReceiver(coordinatorAID);
+        
+        //msg.setLanguage("English");
         try {
             SmithParameter sp = new SmithParameter();
-            sp.type=6; //notify i'm a  
+            sp.type=AgentCoordinator.I_AM_UP;
             msg.setContentObject(sp);
         } catch (IOException ex) {
             Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
         }
         //msg.setContent("launch agents");
         send(msg);
+        System.out.println("message sent");
     }
     
 }

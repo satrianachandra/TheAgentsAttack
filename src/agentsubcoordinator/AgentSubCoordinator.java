@@ -115,7 +115,7 @@ public class AgentSubCoordinator extends Agent {
                     smithArgs[1] = serverAddress;
                     smithArgs[2] = serverPort;
                     //smithArgs[3] = getAID(); //the subcoordinator's aid
-                    agentSmith = agentSmithContainer.createNewAgent("Platform-"+platformNumber+"_Smith-"+j,
+                    agentSmith = agentSmithContainer.createNewAgent("Platform-"+platformNumber+"_Smith-"+k+"_"+j,
                             "agentsmith.AgentSmith", smithArgs);
                     agentSmith.start();
                     numberOfRunningAgents++;

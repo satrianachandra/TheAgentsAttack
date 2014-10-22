@@ -32,7 +32,7 @@ public class AgentSmith extends Agent {
     
     private String serverAddress;
     private int serverPort;
-    //private AgentSmith theAgent;
+    private AgentSmith theAgent;
     private AID coordinatorAID;
     
     private Socket tcpClientSocket;
@@ -43,7 +43,7 @@ public class AgentSmith extends Agent {
     
     @Override
     protected void setup() {
-        //theAgent = this;
+        theAgent = this;
         AgentSubCoordinator.smithList.add(this);
         
         Object[] args = getArguments();
@@ -79,25 +79,14 @@ public class AgentSmith extends Agent {
         //doDelete();
         }
         */
-        
-        addBehaviour(new TickerBehaviour(this, interval) {
-            
-            /*
-            private void informCoordinator(String content){
-                //send confirmation to the agent coordinator
-                ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-                // msg.addReceiver(new AID(receiver, AID.ISLOCALNAME)); //here the name of the agent is already known
-                msg.addReceiver(coordinatorAID);
-                msg.setLanguage("English");
-                msg.setContent(content);
-                
-                //SendMessage smithSM = new SendMessage(msg);
-                //theAgent.addBehaviour(smithSM);
-                
-            }
-            */
-            
+        TickerBehaviour tb = new TickerBehaviour(this, interval) {
             protected void onTick() {
+                if (mustBeKilled){
+                    System.out.println("Hej Hej");
+                    theAgent.removeBehaviour(this);
+                    doDelete();
+                    
+                }
                 try{
                 //if ((tcpClientSocket == null)||tcpClientSocket.isClosed()){
                 tcpClientSocket = new Socket(serverAddress, serverPort);
@@ -117,9 +106,7 @@ public class AgentSmith extends Agent {
                 //informCoordinator("fibo result: "+result);
                 //in.close();
                 tcpClientSocket.close();
-                if (mustBeKilled){
-                    doDelete();
-                }
+                
                 }catch(UnknownHostException e){
                     System.err.println("Don't know about host " + serverAddress);
                     //System.exit(1);
@@ -134,7 +121,8 @@ public class AgentSmith extends Agent {
                 }
                 
             }
-        } );
+        };
+        addBehaviour(tb);
         
        // addBehaviour(new ReceiveMessage());
     }

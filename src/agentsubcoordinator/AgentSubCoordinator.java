@@ -301,6 +301,7 @@ public class AgentSubCoordinator extends Agent {
     */
     
     private void killAgents(){
+        System.out.println("killing agents");
         for (int i=0;i<smithList.size();i++){
             smithList.get(i).killThisAgent();
             smithList.remove(i);

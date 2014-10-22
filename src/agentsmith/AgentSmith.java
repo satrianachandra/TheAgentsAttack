@@ -20,6 +20,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import agentsubcoordinator.AgentSubCoordinator;
 
 /**
  *
@@ -32,15 +33,17 @@ public class AgentSmith extends Agent {
     private String serverAddress;
     private int serverPort;
     //private AgentSmith theAgent;
-    private AID coordinatorAID;
+    //private AID coordinatorAID;
     
-    //private Socket tcpClientSocket;
+    private Socket tcpClientSocket;
     private PrintWriter out ;
     private BufferedReader in ;
-            
+    private boolean killMessageReceived = false;
+    
     @Override
     protected void setup() {
         //theAgent = this;
+        AgentSubCoordinator.smithList.add(this);
         
         Object[] args = getArguments();
         if (args != null){
@@ -57,11 +60,46 @@ public class AgentSmith extends Agent {
             */
         }
         
+        /*
+        //registration to the DF, so we can search the agents later, need to check if necessary
+        DFAgentDescription dfd = new DFAgentDescription();
+        ServiceDescription sd = new ServiceDescription();
+        sd.setType("AgentSmith");
+        sd.setName(getName());
+        sd.setOwnership("JADE");
+        sd.addOntologies("JADEAgent");
+        dfd.setName(getAID());
+
+        dfd.addServices(sd);
+        try {
+            DFService.register(this,dfd);
+        } catch (FIPAException e) {
+            System.err.println(getLocalName()+" registration with DF unsucceeded. Reason: "+e.getMessage());
+        //doDelete();
+        }
+        */
+        
         addBehaviour(new TickerBehaviour(this, interval) {
+            
+            /*
+            private void informCoordinator(String content){
+                //send confirmation to the agent coordinator
+                ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+                // msg.addReceiver(new AID(receiver, AID.ISLOCALNAME)); //here the name of the agent is already known
+                msg.addReceiver(coordinatorAID);
+                msg.setLanguage("English");
+                msg.setContent(content);
+                
+                //SendMessage smithSM = new SendMessage(msg);
+                //theAgent.addBehaviour(smithSM);
+                
+            }
+            */
+            
             protected void onTick() {
                 try{
                 //if ((tcpClientSocket == null)||tcpClientSocket.isClosed()){
-                Socket tcpClientSocket = new Socket(serverAddress, serverPort);
+                tcpClientSocket = new Socket(serverAddress, serverPort);
                     //out = new PrintWriter(tcpClientSocket.getOutputStream(), true);
                     //in = new BufferedReader(
                     //new InputStreamReader(tcpClientSocket.getInputStream()));
@@ -70,7 +108,6 @@ public class AgentSmith extends Agent {
                 //in = new BufferedReader(new InputStreamReader(tcpClientSocket.getInputStream()));
                 //out.println("100#"+getAID().getName());
                 
-                //String result="";
                 //result = in.readLine();                //out.close();
 
                 System.out.println("AID:"+getAID().getName());
@@ -78,8 +115,11 @@ public class AgentSmith extends Agent {
                 //informCoordinator("fibo result: "+result);
                 //in.close();
                 tcpClientSocket.close();    
+                if (killMessageReceived){
+                    doDelete();
+                }
                 }catch(UnknownHostException e){
-                    //System.err.println("Don't know about host " + serverAddress);
+                    System.err.println("Don't know about host " + serverAddress);
                     //System.exit(1);
                 } catch (IOException ex) {
                     Logger.getLogger(AgentSmith.class.getName()).log(Level.SEVERE, null, ex);
@@ -94,7 +134,7 @@ public class AgentSmith extends Agent {
             }
         } );
         
-       // addBehaviour(new ReceiveMessage());
+       addBehaviour(new ReceiveMessage());
     }
     
     @Override
@@ -132,7 +172,7 @@ public class AgentSmith extends Agent {
     }
     */
 
-    /*
+    
     public class ReceiveMessage extends CyclicBehaviour {
    // Variable to Hold the content of the received Message
     private String Message_Performative;
@@ -158,7 +198,12 @@ public class AgentSmith extends Agent {
     } 
     
     }
-    */
+    
 
+    
+    public void killThisAgent(){
+        killMessageReceived = true;
+    }
+    
     
 }

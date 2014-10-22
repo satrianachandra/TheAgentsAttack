@@ -151,6 +151,7 @@ public class AgentCoordinator extends GuiAgent {
                             numberOfRunningAgents+=sp.numberOfRunningAgents;
                             agentUI.updateNumberOfAgents(numberOfRunningAgents);
                         }else if(Message_Performative.equals("INFORM")&& sp.type==I_AM_UP){
+                            //newSCLaunched(sender);
                             //listRemoteSubCoordinators.add(sender);
                             launchRemoteAgents(sender);
                             //tell the remote subcoordinator to start 1000 machines
@@ -354,5 +355,8 @@ public class AgentCoordinator extends GuiAgent {
         send(msg2);
     }
 
+    private static void newSCLaunched(AID scAID){
+        listRemoteSubCoordinators.add(scAID);
+    }
 }
 

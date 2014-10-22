@@ -6,6 +6,7 @@
 package agentsubcoordinator;
 
 import agentcoordinator.AgentCoordinator;
+import agentsmith.AgentSmith;
 import jade.content.lang.Codec;
 import jade.content.lang.sl.SLCodec;
 import jade.content.onto.OntologyException;
@@ -41,12 +42,14 @@ import messageclasses.SmithParameter;
 public class AgentSubCoordinator extends Agent {
     
     private List<jade.wrapper.AgentContainer> mainContainersList;
-    //private List<AgentController> agentsList;
+    private List<AgentController> agentsList;
     private int platformNumber=0;
     private int numberOfRunningAgents = 0;
     public static jade.wrapper.ContainerController agentContainer;
     private jade.wrapper.ContainerController agentSmithContainer;
     private AID coordinatorAID;
+    
+    public static List<AgentSmith>smithList = new ArrayList<AgentSmith>();
     
     @Override
     protected void setup() {
@@ -93,7 +96,7 @@ public class AgentSubCoordinator extends Agent {
         System.out.print("runtime created\n");
         
         mainContainersList = new ArrayList<>();
-        //agentsList = new ArrayList<>();
+        agentsList = new ArrayList<>();
         //listOfProcesses = new ArrayList<>();
         
         //Profile mProfile = new ProfileImpl("192.168.0.102", startingPort+i,"Platform-"+i+":"+(startingPort+i),false);
@@ -115,8 +118,8 @@ public class AgentSubCoordinator extends Agent {
                 agentSmith = agentSmithContainer.createNewAgent("Platform-"+platformNumber+"_Smith-"+j,
                         "agentsmith.AgentSmith", smithArgs);
                 agentSmith.start();
-                numberOfRunningAgents++;
-               // agentsList.add(agentSmith);
+                //numberOfRunningAgents++;
+                agentsList.add(agentSmith);
             } catch (StaleProxyException ex) {
                 Logger.getLogger(AgentSubCoordinator.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -301,6 +304,14 @@ public class AgentSubCoordinator extends Agent {
     */
     
     private void killAgents(){
+        for(int i=0;i<smithList.size();i++){
+            smithList.get(i).killThisAgent();
+        }
+        
+        for (int i=0;i<agentsList.size();i++){
+            //agentsList.get(i).k
+        }
+        /*
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -318,8 +329,10 @@ public class AgentSubCoordinator extends Agent {
                // } catch (StaleProxyException ex) {
                   //  Logger.getLogger(AgentSubCoordinator.class.getName()).log(Level.SEVERE, null, ex);
                // }
+        /*
             }
         }).start();
+        */
     }
     
     
@@ -331,7 +344,7 @@ public class AgentSubCoordinator extends Agent {
     private void notifyCoordinator(){
         //the local
         ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-        AID coordinatorAID = new AID("TheCoordinator@192.168.0.100:1099/JADE", AID.ISGUID);
+        AID coordinatorAID = new AID("TheCoordinator@192.168.0.102:1099/JADE", AID.ISGUID);
         coordinatorAID.addAddresses("http://sakuragi:7778/acc");
         msg.addReceiver(coordinatorAID);
         

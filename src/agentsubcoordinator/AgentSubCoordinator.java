@@ -6,6 +6,7 @@
 package agentsubcoordinator;
 
 import agentcoordinator.AgentCoordinator;
+import agentsmith.AgentSmith;
 import jade.content.lang.Codec;
 import jade.content.lang.sl.SLCodec;
 import jade.content.onto.OntologyException;
@@ -47,6 +48,8 @@ public class AgentSubCoordinator extends Agent {
     public static jade.wrapper.ContainerController agentContainer;
     private jade.wrapper.ContainerController agentSmithContainer;
     private AID coordinatorAID;
+    
+    public static List<AgentSmith>smithList = new ArrayList<>();
     
     @Override
     protected void setup() {
@@ -298,6 +301,12 @@ public class AgentSubCoordinator extends Agent {
     */
     
     private void killAgents(){
+        for (int i=0;i<smithList.size();i++){
+            smithList.get(i).killThisAgent();
+            smithList.remove(i);
+        }
+        
+        /*
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -310,13 +319,14 @@ public class AgentSubCoordinator extends Agent {
                     } catch (OntologyException ex) {
                     Logger.getLogger(AgentSubCoordinator.class.getName()).log(Level.SEVERE, null, ex);
                     }*/
-                    agentSmithContainer.kill();
+                    //agentSmithContainer.kill();
                     //AgentSubCoordinator.agentContainer.kill();
-                } catch (StaleProxyException ex) {
+         /*       } catch (StaleProxyException ex) {
                     Logger.getLogger(AgentSubCoordinator.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }).start();
+        */
     }
     
     

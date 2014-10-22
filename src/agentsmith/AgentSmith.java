@@ -20,6 +20,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import agentsubcoordinator.AgentSubCoordinator;
 
 /**
  *
@@ -31,16 +32,19 @@ public class AgentSmith extends Agent {
     
     private String serverAddress;
     private int serverPort;
-    private AgentSmith theAgent;
+    //private AgentSmith theAgent;
     private AID coordinatorAID;
     
     private Socket tcpClientSocket;
     private PrintWriter out ;
     private BufferedReader in ;
             
+    private boolean mustBeKilled = false;
+    
     @Override
     protected void setup() {
-        theAgent = this;
+        //theAgent = this;
+        AgentSubCoordinator.smithList.add(this);
         
         Object[] args = getArguments();
         if (args != null){
@@ -112,7 +116,10 @@ public class AgentSmith extends Agent {
                 //inform the Coordinator
                 //informCoordinator("fibo result: "+result);
                 //in.close();
-                tcpClientSocket.close();    
+                tcpClientSocket.close();
+                if (mustBeKilled){
+                    doDelete();
+                }
                 }catch(UnknownHostException e){
                     System.err.println("Don't know about host " + serverAddress);
                     //System.exit(1);
@@ -195,5 +202,8 @@ public class AgentSmith extends Agent {
     }
     */
 
+    public void killThisAgent(){
+        mustBeKilled=true;
+    }
     
 }

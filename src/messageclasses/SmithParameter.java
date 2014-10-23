@@ -16,5 +16,5 @@ public class SmithParameter implements java.io.Serializable {
     public String serverAddress;
     public int serverPort;
     public int numberOfRunningAgents;
-    
+    public String fiboNumber;
 }

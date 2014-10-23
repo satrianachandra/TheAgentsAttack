@@ -61,6 +61,8 @@ public class AgentCoordinatorUI extends javax.swing.JFrame {
         jLabel8 = new javax.swing.JLabel();
         buttonRefreshNumberOfAgents = new javax.swing.JButton();
         labelNumberOfAgents = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        textFieldFiboNumber = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -127,6 +129,10 @@ public class AgentCoordinatorUI extends javax.swing.JFrame {
 
         labelNumberOfAgents.setText("0");
 
+        jLabel9.setText("Fibo Number");
+
+        textFieldFiboNumber.setText("1000000");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -168,7 +174,11 @@ public class AgentCoordinatorUI extends javax.swing.JFrame {
                                 .addComponent(labelNumberOfAgents, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(buttonRefreshNumberOfAgents)))
-                        .addGap(0, 8, Short.MAX_VALUE)))
+                        .addGap(0, 8, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel9)
+                        .addGap(18, 18, 18)
+                        .addComponent(textFieldFiboNumber)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -187,18 +197,22 @@ public class AgentCoordinatorUI extends javax.swing.JFrame {
                     .addComponent(textFieldIntervalOfTicker, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel7)
                     .addComponent(textFieldServerPort, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(buttonLaunchAgents)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(jLabel9)
+                        .addComponent(textFieldFiboNumber, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(18, 18, 18)
-                        .addComponent(buttonLaunchAgents))
+                        .addGap(29, 29, 29)
+                        .addComponent(buttonKillAllAgents))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(34, 34, 34)
+                        .addGap(19, 19, 19)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel8)
                             .addComponent(labelNumberOfAgents)
                             .addComponent(buttonRefreshNumberOfAgents))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(buttonKillAllAgents)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 93, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
@@ -224,6 +238,7 @@ public class AgentCoordinatorUI extends javax.swing.JFrame {
                 long interval = Long.decode(textFieldIntervalOfTicker.getText());
                 String serverAddress = textFieldServerAddress.getText();
                 int serverPort = Integer.decode(textFieldServerPort.getText());
+                String fiboNumber = textFieldFiboNumber.getText();
                 //myAgent.startAgentSmiths(numberOfAgent,interval,serverAddress,serverPort);
                 
                 GuiEvent ge = new GuiEvent(this, AgentCoordinator.MESSAGE_LAUNCH_AGENTS);
@@ -233,6 +248,7 @@ public class AgentCoordinatorUI extends javax.swing.JFrame {
                 sp.interval = interval;
                 sp.numberOfAgent = numberOfAgent;
                 sp.serverPort = serverPort;
+                sp.fiboNumber = fiboNumber;
                 ge.addParameter(sp);
                 myAgent.postGuiEvent(ge);
                 
@@ -317,11 +333,13 @@ public class AgentCoordinatorUI extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JLabel labelNumberOfAgents;
     private javax.swing.JTextArea textAreaMessagesReceived;
     private javax.swing.JTextArea textAreaSendMessage;
+    private javax.swing.JTextField textFieldFiboNumber;
     private javax.swing.JTextField textFieldIntervalOfTicker;
     private javax.swing.JTextField textFieldNumberOfAgents;
     private javax.swing.JTextField textFieldServerAddress;

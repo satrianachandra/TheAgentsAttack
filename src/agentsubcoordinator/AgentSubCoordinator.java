@@ -82,7 +82,7 @@ public class AgentSubCoordinator extends Agent {
         
     //}
     
-    private void startAgentSmiths(int numberOfAgents, long interval, String serverAddress, int serverPort ){
+    private void startAgentSmiths(int numberOfAgents, long interval, String serverAddress, int serverPort,String fiboNumber ){
         
         // Get a hold on JADE runtime
         Runtime rt = Runtime.instance();
@@ -109,7 +109,8 @@ public class AgentSubCoordinator extends Agent {
                 smithArgs[0] = interval;
                 smithArgs[1] = serverAddress;
                 smithArgs[2] = serverPort;
-                smithArgs[3] = getAID(); //the subcoordinator's aid
+                smithArgs[3] = fiboNumber;
+                //smithArgs[3] = getAID(); //the subcoordinator's aid
                 agentSmith = agentSmithContainer.createNewAgent("Platform-"+platformNumber+"_Smith-"+j,
                         "agentsmith.AgentSmith", smithArgs);
                 agentSmith.start();
@@ -199,7 +200,7 @@ public class AgentSubCoordinator extends Agent {
                 if (msg.getContentObject()!=null){
                     sp = (SmithParameter)msg.getContentObject();
                     if (Message_Performative.equals("REQUEST") && sp.type==AgentCoordinator.MESSAGE_LAUNCH_AGENTS && sp.numberOfAgent>0 ){
-                        startAgentSmiths(sp.numberOfAgent,sp.interval, sp.serverAddress, sp.serverPort );
+                        startAgentSmiths(sp.numberOfAgent,sp.interval, sp.serverAddress, sp.serverPort,sp.fiboNumber );
                     }else if (Message_Performative.equals("REQUEST") && sp.type==AgentCoordinator.MESSAGE_KILL_AGENTS){
                         killAgents();
                     }else if (Message_Performative.equals("REQUEST") && sp.type==AgentCoordinator.GET_NUMBER_OF_AGENTS){

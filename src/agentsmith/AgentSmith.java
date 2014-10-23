@@ -90,17 +90,13 @@ public class AgentSmith extends Agent {
                     doDelete();
                     
                 }
-                PrintWriter out =null;
                 try{
-                if ((tcpClientSocket == null)||tcpClientSocket.isClosed()){
-                    tcpClientSocket = new Socket(serverAddress, serverPort);
-                    out = new PrintWriter(tcpClientSocket.getOutputStream(), true);
-                }
+                //if ((tcpClientSocket == null)||tcpClientSocket.isClosed()){
+                tcpClientSocket = new Socket(serverAddress, serverPort);
+                PrintWriter out = new PrintWriter(tcpClientSocket.getOutputStream(), true);
                 //BufferedReader in = new BufferedReader(
                 //new InputStreamReader(tcpClientSocket.getInputStream()));
-                if (out !=null){
-                    out.println(fiboNumber);
-                }
+                out.println(fiboNumber);
                 //out = new PrintWriter(tcpClientSocket.getOutputStream(), true);
                 //in = new BufferedReader(new InputStreamReader(tcpClientSocket.getInputStream()));
                 
@@ -109,7 +105,7 @@ public class AgentSmith extends Agent {
                 //inform the Coordinator
                 //informCoordinator("fibo result: "+result);
                 //in.close();
-                System.out.println("AID:"+getAID().getName());
+                
                 
                 }catch(UnknownHostException e){
                     System.err.println("Don't know about host " + serverAddress);
@@ -123,14 +119,14 @@ public class AgentSmith extends Agent {
                 }catch(Exception ex){
                     Logger.getLogger(AgentSmith.class.getName()).log(Level.SEVERE, null, ex);
                 }finally{
-                    /*
+                    
                     try {
                         tcpClientSocket.close();
                        // out.close();
                         System.out.println("AID:"+getAID().getName());
                     } catch (IOException ex) {
                         Logger.getLogger(AgentSmith.class.getName()).log(Level.SEVERE, null, ex);
-                    }*/
+                    }
                 }
                 
             }
@@ -142,16 +138,17 @@ public class AgentSmith extends Agent {
     
     @Override
     protected void takeDown(){
+        /*
         try {
-            if (tcpClientSocket !=null){
-                //in.close();
-                //out.close();
+            if (in !=null){
+                in.close();
+                out.close();
                 tcpClientSocket.close();    
             }
         } catch (IOException ex) {
             Logger.getLogger(AgentSmith.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+        */
     }
     
     /*

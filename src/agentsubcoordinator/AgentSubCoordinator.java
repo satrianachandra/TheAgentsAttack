@@ -75,6 +75,8 @@ public class AgentSubCoordinator extends Agent {
         
         ReceiveMessage rm = new ReceiveMessage();
         addBehaviour(rm);
+        
+        notifyCoordinator();
     }
     
     //@Override
@@ -340,4 +342,21 @@ public class AgentSubCoordinator extends Agent {
         killAgents();
     }
     
+
+    public void notifyCoordinator(){
+        //the local
+        ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+        msg.addReceiver(coordinatorAID);
+        msg.setLanguage("English");
+        try {
+            SmithParameter sp = new SmithParameter();
+            sp.type=AgentCoordinator.MESSAGE_I_AM_UP; 
+            msg.setContentObject(sp);
+        } catch (IOException ex) {
+            Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        //msg.setContent("launch agents");
+        send(msg);
+
+    }
 }

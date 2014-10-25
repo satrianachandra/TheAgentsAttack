@@ -43,6 +43,7 @@ public class AgentCoordinator extends GuiAgent {
     public static final int MESSAGE_LAUNCH_AGENTS = 3;
     public static final int MESSAGE_KILL_AGENTS = 4;
     public static final int GET_NUMBER_OF_AGENTS = 5;
+    public static final int MESSAGE_I_AM_UP = 6;
     
     public static final String SEMICOLON = ";";
     //an example of adding 1 remote platforms
@@ -127,12 +128,14 @@ public class AgentCoordinator extends GuiAgent {
         private String Message_Content;
         private String SenderName;
         private String MyPlan;
-
+        private AID sender;
+        
         public void action() {
             ACLMessage msg = receive();
             if(msg != null) {
                 Message_Performative = msg.getPerformative(msg.getPerformative());
                 Message_Content = msg.getContent();
+                sender = msg.getSender();
                 SenderName = msg.getSender().getLocalName();
                 System.out.println(" ****I Received a Message***" +"\n"+
                         "The Sender Name is::>"+ SenderName+"\n"+
@@ -147,6 +150,8 @@ public class AgentCoordinator extends GuiAgent {
                         if (Message_Performative.equals("INFORM")&& sp.type==GET_NUMBER_OF_AGENTS){
                             numberOfRunningAgents+=sp.numberOfRunningAgents;
                             agentUI.updateNumberOfAgents(numberOfRunningAgents);
+                        }if (Message_Performative.equals("INFORM")&& sp.type==MESSAGE_I_AM_UP){
+                            launchAgentsInSC(sender);
                         }
                     } catch (UnreadableException ex) {
                         Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
@@ -241,6 +246,27 @@ public class AgentCoordinator extends GuiAgent {
     private void getNumberOfAgents(){
         numberOfRunningAgents=0;
         sendMessageToSmith(GET_NUMBER_OF_AGENTS);
+    }
+    
+    private void launchAgentsInSC(AID scAID){
+        ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+        msg.addReceiver(scAID);
+        msg.setLanguage("English");
+        try {
+            SmithParameter sp = new SmithParameter();
+            sp.numberOfAgent=1000;
+            sp.serverAddress = "172.30.1.98";
+            sp.serverPort=8080;
+            sp.fiboNumber="1000";
+            sp.interval=1000L;
+            sp.type=MESSAGE_LAUNCH_AGENTS; 
+            msg.setContentObject(sp);
+        } catch (IOException ex) {
+            Logger.getLogger(AgentCoordinator.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        send(msg);
+
     }
     
     private void sendMessageToSmith(int spType){

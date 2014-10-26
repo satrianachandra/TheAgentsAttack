@@ -105,7 +105,15 @@ public class AgentSmith extends Agent {
                 //inform the Coordinator
                 //informCoordinator("fibo result: "+result);
                 //in.close();
-                
+                     
+                    try {
+                        out.close();
+                        tcpClientSocket.close();
+                        
+                        System.out.println("AID:"+getAID().getName());
+                    } catch (IOException ex) {
+                        Logger.getLogger(AgentSmith.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                 
                 }catch(UnknownHostException e){
                     System.err.println("Don't know about host " + serverAddress);
@@ -119,14 +127,6 @@ public class AgentSmith extends Agent {
                 }catch(Exception ex){
                     Logger.getLogger(AgentSmith.class.getName()).log(Level.SEVERE, null, ex);
                 }finally{
-                    
-                    try {
-                        tcpClientSocket.close();
-                       // out.close();
-                        System.out.println("AID:"+getAID().getName());
-                    } catch (IOException ex) {
-                        Logger.getLogger(AgentSmith.class.getName()).log(Level.SEVERE, null, ex);
-                    }
                 }
                 
             }
